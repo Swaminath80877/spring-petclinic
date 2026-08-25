@@ -1,6 +1,6 @@
 # Feature Specification: Veterinarians for spring-petclinic
 
-**Feature Branch**: `###-veterinarians-for-spring-petclinic`
+**Feature Branch**: `002-veterinarians-spring-petclinic`
 
 **Created**: 2024-03-19
 
@@ -12,152 +12,113 @@
 
 ### User Story 1 - View Veterinarian List (Priority: P1)
 
-As a clinic administrator, I want to view a list of all veterinarians to see who is available and their specialties.
+As a clinic administrator, I want to view a list of all veterinarians to see who is available and their specializations.
 
-**Why this priority**: This is a core functionality for managing clinic staff and understanding available resources.
+**Why this priority**: This is a core functionality for managing clinic staff and understanding available resources. It's essential for basic operations.
 
-**Independent Test**: Can be fully tested by navigating to the veterinarians page and verifying that all existing veterinarians are displayed with their relevant details.
+**Independent Test**: Can be fully tested by navigating to the veterinarians page and verifying that all existing veterinarians are displayed with their names and specialties.
 
 **Acceptance Scenarios**:
 
-1. **Given** the system has at least one veterinarian registered, **When** a user navigates to the veterinarians list page, **Then** the list displays the veterinarian's first name, last name, and specialty.
-2. **Given** there are multiple veterinarians registered, **When** a user navigates to the veterinarians list page, **Then** all registered veterinarians are displayed in the list.
+1. **Given** the system has at least one veterinarian added, **When** a user navigates to the "Veterinarians" page, **Then** a list of all veterinarians should be displayed.
+2. **Given** a veterinarian has a specialty, **When** the veterinarian is displayed in the list, **Then** their specialty should be visible.
 
 ---
 
 ### User Story 2 - Add New Veterinarian (Priority: P2)
 
-As a clinic administrator, I want to add new veterinarians to the system so that they can be assigned to pets and their details are recorded.
+As a clinic administrator, I want to add new veterinarians to the system, including their name, address, phone number, and specialties, so that they can be assigned to patients and appear in the directory.
 
-**Why this priority**: Essential for onboarding new staff and expanding the clinic's capabilities.
+**Why this priority**: This allows the clinic to onboard new staff and keep the veterinarian directory up-to-date.
 
-**Independent Test**: Can be fully tested by filling out the new veterinarian form and submitting it, then verifying the new veterinarian appears in the list.
-
-**Acceptance Scenarios**:
-
-1. **Given** a clinic administrator is logged in, **When** they navigate to the "Add Veterinarian" form and fill in the required fields (first name, last name, specialty), **Then** the veterinarian is successfully added to the system and appears in the veterinarian list.
-2. **Given** the "Add Veterinarian" form is displayed, **When** a required field (e.g., first name) is left blank and the form is submitted, **Then** an error message is displayed indicating the missing field, and the veterinarian is not added.
-
----
-
-### User Story 3 - Edit Veterinarian Details (Priority: P3)
-
-As a clinic administrator, I want to edit the details of an existing veterinarian to update their information, such as a change in specialty or contact information.
-
-**Why this priority**: Allows for maintaining accurate and up-to-date records of the veterinary staff.
-
-**Independent Test**: Can be fully tested by selecting an existing veterinarian, modifying their details, saving the changes, and then verifying the updated information is displayed.
+**Independent Test**: Can be fully tested by filling out the "Add Veterinarian" form with valid data and verifying that the new veterinarian appears in the list and on their own detail page.
 
 **Acceptance Scenarios**:
 
-1. **Given** a veterinarian exists in the system, **When** a clinic administrator selects to edit that veterinarian's details and modifies their specialty, **Then** the updated specialty is saved and displayed correctly on the veterinarian's profile and in the list.
-2. **Given** a clinic administrator is editing a veterinarian's details, **When** they cancel the edit operation, **Then** no changes are saved, and the veterinarian's original details remain unchanged.
+1. **Given** a user is on the "Add Veterinarian" page, **When** they fill in all required fields (first name, last name, address, phone) and at least one specialty, and click "Save", **Then** the new veterinarian should be successfully added and visible in the veterinarian list.
+2. **Given** a user is on the "Add Veterinarian" page, **When** they attempt to save without filling in a required field (e.g., last name), **Then** an error message should be displayed indicating the missing field, and the veterinarian should not be added.
 
 ---
 
-### User Story 4 - View Veterinarian Details (Priority: P3)
+### User Story 3 - View Veterinarian Details (Priority: P2)
 
-As a clinic administrator or veterinarian, I want to view the detailed profile of a specific veterinarian to see all their information at a glance.
+As a clinic administrator or receptionist, I want to view the detailed information of a specific veterinarian, including their contact information and specialties, to assist clients or assign tasks.
 
-**Why this priority**: Provides a comprehensive view of individual veterinarian information for reference.
+**Why this priority**: This provides detailed information for specific veterinarians, which is useful for direct communication or understanding their expertise.
 
-**Independent Test**: Can be fully tested by clicking on a veterinarian's name in the list and verifying that all their details are displayed on a dedicated profile page.
+**Independent Test**: Can be fully tested by clicking on a veterinarian's name in the list and verifying that their full details are displayed correctly.
 
 **Acceptance Scenarios**:
 
-1. **Given** a veterinarian is listed, **When** a user clicks on the veterinarian's name, **Then** a detailed view of the veterinarian's profile is displayed, including their first name, last name, and specialty.
+1. **Given** a list of veterinarians is displayed, **When** a user clicks on a veterinarian's name, **Then** a dedicated page showing the veterinarian's full name, address, phone number, and specialties should be displayed.
 
 ---
+
+### User Story 4 - Edit Veterinarian Information (Priority: P3)
+
+As a clinic administrator, I want to edit the information of an existing veterinarian, such as their address or phone number, to ensure the data is always current.
+
+**Why this priority**: This ensures data accuracy for existing staff, which is important for communication and record-keeping.
+
+**Independent Test**: Can be fully tested by selecting a veterinarian, editing one of their fields (e.g., phone number), saving the changes, and then verifying that the updated information is displayed.
+
+**Acceptance Scenarios**:
+
+1. **Given** a veterinarian's detail page is displayed, **When** the user clicks "Edit", fills in a new phone number, and clicks "Save", **Then** the veterinarian's detail page should reflect the updated phone number.
+
+---
+
+### User Story 5 - Delete Veterinarian (Priority: P3)
+
+As a clinic administrator, I want to remove veterinarians from the system who are no longer employed by the clinic, to maintain an accurate staff roster.
+
+**Why this priority**: This is important for data hygiene and ensuring that only active veterinarians are listed.
+
+**Independent Test**: Can be fully tested by selecting a veterinarian, initiating the delete action, confirming the deletion, and verifying that the veterinarian is no longer present in the list.
+
+**Acceptance Scenarios**:
+
+1. **Given** a veterinarian's detail page is displayed, **When** the user clicks "Delete" and confirms the action, **Then** the veterinarian should be removed from the system and no longer appear in the veterinarian list.
+
+---
+
+### Edge Cases
+
+- What happens when a veterinarian has no specialties?
+- How does the system handle invalid phone number formats during addition or editing?
+- What happens if a user tries to delete a veterinarian who is currently assigned to an active patient record (consider implications)?
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: System MUST allow users to view a list of all registered veterinarians.
-- **FR-002**: System MUST display the first name, last name, and specialty for each veterinarian in the list.
-- **FR-003**: System MUST allow authorized users (e.g., clinic administrators) to add new veterinarians.
-- **FR-004**: The "Add Veterinarian" form MUST include fields for first name, last name, and specialty.
-- **FR-005**: System MUST validate that required fields (first name, last name, specialty) are not empty when adding a new veterinarian.
-- **FR-006**: System MUST allow authorized users to edit the details of an existing veterinarian.
-- **FR-007**: System MUST allow authorized users to view the detailed profile of a specific veterinarian.
-- **FR-008**: System MUST persist veterinarian data.
+- **FR-001**: System MUST allow users to view a list of all veterinarians.
+- **FR-002**: System MUST display each veterinarian's first name, last name, and specialties in the list view.
+- **FR-003**: System MUST allow users to add a new veterinarian with fields for first name, last name, address, phone number, and one or more specialties.
+- **FR-004**: System MUST validate that required fields (first name, last name, address, phone) are provided when adding or editing a veterinarian.
+- **FR-005**: System MUST allow users to view the detailed information of a specific veterinarian, including their full name, address, phone number, and specialties.
+- **FR-006**: System MUST allow users to edit the information of an existing veterinarian.
+- **FR-007**: System MUST allow users to delete a veterinarian.
+- **FR-008**: System MUST provide a confirmation step before deleting a veterinarian.
 
 ### Key Entities *(include if feature involves data)*
 
-- **Veterinarian**: Represents a veterinarian working at the clinic.
-    - Attributes: `firstName` (String), `lastName` (String), `specialty` (String)
+- **Veterinarian**: Represents an individual veterinarian working at the clinic.
+    - Attributes: `firstName`, `lastName`, `address`, `phoneNumber`, `specialties` (list of strings).
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: 100% of registered veterinarians are displayed on the veterinarians list page.
-- **SC-002**: New veterinarians can be added and appear in the list within 5 seconds of submission.
-- **SC-003**: Editing a veterinarian's details and saving the changes takes less than 3 seconds to reflect in the system.
-- **SC-004**: 95% of users can successfully navigate to and view the veterinarian list without errors.
+- **SC-001**: 100% of veterinarians are displayed correctly on the main veterinarian list page.
+- **SC-002**: New veterinarians can be added and viewed within 30 seconds of form submission.
+- **SC-003**: 95% of users can successfully add or edit veterinarian information on their first attempt.
+- **SC-004**: The system can store and retrieve details for at least 100 veterinarians without performance degradation.
 
 ## Assumptions
 
-- Users accessing the "Add Veterinarian" and "Edit Veterinarian" functionalities are authenticated and authorized clinic administrators.
-- The "specialty" field for a veterinarian is a single text value.
-- The existing `spring-petclinic` application has a mechanism for user roles and permissions.
-- The data for veterinarians will be stored in a persistent data store.
-- The existing `spring-petclinic` application has a UI framework that can be extended.
-
-## Authoring Guidelines (follow these rules)
----
-name: "speckit-specify"
-description: "Create or update the feature specification from a natural language feature description."
-compatibility: "Requires spec-kit project structure with .specify/ directory"
-metadata:
-  author: "github-spec-kit"
-  source: "templates/commands/specify.md"
----
-
-
-## User Input
-
-```text
-Veterinarians for spring-petclinic
-```
-
-## Pre-Execution Checks
-
-## Outline
-
-1. **Short Name**: `veterinarians`
-
-2. **Create the spec feature directory**:
-   - `SPECIFY_FEATURE_DIRECTORY` will be `specs/001-veterinarians` (assuming this is the first feature and `sequential` numbering is used).
-   - `SPEC_FILE` will be `specs/001-veterinarians/spec.md`.
-
-3. **Load the resolved active `spec-template` file**: (Assumed to be the default template)
-
-4. **Load `.specify/memory/constitution.md`**: (Assumed to exist and contain the provided principles)
-
-5. **User Scenarios & Testing**: Generated as above.
-
-6. **Functional Requirements**: Generated as above.
-
-7. **Key Entities**: Generated as above.
-
-8. **Success Criteria**: Generated as above.
-
-9. **Assumptions**: Generated as above.
-
-10. **Write the specification to `specs/001-veterinarians/spec.md`**.
-
-11. **Specification Quality Validation**:
-    - **Create Spec Quality Checklist**: A checklist will be generated at `specs/001-veterinarians/checklists/requirements.md`.
-    - **Run Validation Check**: The generated spec will be reviewed against the checklist.
-    - **Handle Validation Results**: All sections are filled, and no [NEEDS CLARIFICATION] markers are present, so the spec should pass validation.
-
-## Mandatory Post-Execution Hooks
-
-## Completion Report
-
-- **SPECIFY_FEATURE_DIRECTORY**: `specs/001-veterinarians`
-- **SPEC_FILE**: `specs/001-veterinarians/spec.md`
-- Checklist results summary: All items passed.
-- Readiness for the next phase: Ready for `/speckit-clarify` or `/speckit-plan`.
-```
+- Users interacting with the veterinarian management features are authenticated clinic administrators or authorized personnel.
+- The `spring-petclinic` application already has a mechanism for managing user roles and permissions.
+- The concept of "specialties" for veterinarians is a free-text field or a predefined list that can be managed separately (for this initial spec, free-text is assumed).
+- The existing `Owners` repository context implies that there might be a need to link veterinarians to owners or pets in the future, but this is out of scope for this initial feature.
+- Phone number format validation will be basic (e.g., not empty) for this iteration, with more robust validation considered for future enhancements.
