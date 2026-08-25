@@ -1,119 +1,250 @@
 # Feature Specification: Pet Types for spring-petclinic
 
-**Feature Branch**: `###-pet-types`
+**Feature Branch**: `003-pet-types-spring-petclinic`
 
-**Created**: 2024-03-19
+**Created**: 2023-10-27
 
 **Status**: Draft
 
-**Input**: User description: "Add support for different pet types in the spring-petclinic application."
+**Input**: Pet Types for spring-petclinic
 
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 - View Available Pet Types (Priority: P1)
+### User Story 1 - View Pet Types (Priority: P1)
 
-As a user, I want to see a list of all available pet types so that I can select the correct type when adding or editing a pet.
+As a user, I want to view a list of all available pet types so that I can select one when adding a new pet.
 
-**Why this priority**: This is a foundational requirement. Without being able to see and select pet types, users cannot accurately manage pet information, which is a core function of the application.
+**Why this priority**: This is a fundamental requirement for adding a pet, enabling users to categorize their pets correctly.
 
-**Independent Test**: Can be fully tested by navigating to the pet management section and verifying that a dropdown or list displays all defined pet types. This delivers the value of accurate pet data entry.
+**Independent Test**: Can be fully tested by navigating to the "Add New Pet" form and verifying the presence of a dropdown or list of pet types. Delivers the core functionality of pet categorization.
 
 **Acceptance Scenarios**:
 
-1. **Given** the system has defined pet types (e.g., Dog, Cat, Bird), **When** a user navigates to the "Add Pet" or "Edit Pet" form, **Then** a list or dropdown displays "Dog", "Cat", and "Bird" as selectable options.
-2. **Given** no pet types are defined in the system, **When** a user navigates to the "Add Pet" or "Edit Pet" form, **Then** the pet type selection should be empty or indicate no types are available.
+1. **Given** that there are several pet types defined in the system (e.g., Cat, Dog, Bird)
+   **When** I navigate to the "Add New Pet" form
+   **Then** I should see a list of all available pet types to choose from.
 
 ---
 
-### User Story 2 - Add a New Pet Type (Priority: P2)
+### User Story 2 - Search Pet Types (Priority: P2)
 
-As an administrator, I want to be able to add new pet types to the system so that the application can accommodate a wider variety of animals.
+As a user, I want to be able to search for a pet type by name so that I can quickly find the correct type.
 
-**Why this priority**: While not immediately critical for existing functionality, the ability to add new pet types provides flexibility and extensibility for future growth and diverse user needs.
+**Why this priority**: Improves user experience by allowing quicker selection, especially in systems with many pet types.
 
-**Independent Test**: Can be fully tested by an administrator accessing a dedicated management interface, adding a new pet type (e.g., "Reptile"), and then verifying its presence in the list of available pet types (as per User Story 1).
+**Independent Test**: Can be tested by interacting with a search input on the "Add New Pet" form and verifying that typing a partial name filters the list. Delivers enhanced usability for pet type selection.
 
 **Acceptance Scenarios**:
 
-1. **Given** I am logged in as an administrator, **When** I navigate to the "Manage Pet Types" section and enter "Reptile" as a new pet type, **Then** the new pet type "Reptile" is successfully saved and appears in the list of available pet types.
-2. **Given** I am logged in as an administrator, **When** I attempt to add a pet type that already exists (e.g., "Dog" again), **Then** the system should prevent the duplicate entry and provide an appropriate error message.
+1. **Given** that there are many pet types in the system
+   **When** I am on the "Add New Pet" form and start typing a pet type name (e.g., "Dog")
+   **Then** the system should filter and display matching pet types.
 
 ---
 
-### User Story 3 - Edit an Existing Pet Type (Priority: P3)
+### User Story 3 - Validate Pet Type Selection (Priority: P1)
 
-As an administrator, I want to be able to edit existing pet types (e.g., rename them) so that I can correct mistakes or update terminology.
+As a user, I want to ensure that only valid pet types can be selected when adding a pet, so that data integrity is maintained.
 
-**Why this priority**: This is a maintenance task. It's important for data integrity but less critical than adding or viewing pet types.
+**Why this priority**: Crucial for maintaining data integrity and preventing invalid data from entering the system.
 
-**Independent Test**: Can be fully tested by an administrator selecting an existing pet type, renaming it (e.g., changing "Bird" to "Avian"), and verifying the change in the pet type list and on any associated pet records.
-
-**Acceptance Scenarios**:
-
-1. **Given** I am logged in as an administrator and the pet type "Bird" exists, **When** I edit the pet type and rename it to "Avian", **Then** the pet type is updated to "Avian" in all relevant lists and records.
-2. **Given** I am logged in as an administrator, **When** I attempt to edit a pet type to an empty name, **Then** the system should prevent the save and display an error message.
-
----
-
-### User Story 4 - Delete a Pet Type (Priority: P3)
-
-As an administrator, I want to be able to delete pet types that are no longer needed so that the list of available pet types remains clean and relevant.
-
-**Why this priority**: Similar to editing, this is a maintenance task. It's important for data hygiene but not a primary user-facing feature for pet owners.
-
-**Independent Test**: Can be fully tested by an administrator selecting a pet type that is not currently associated with any pets and deleting it, then verifying it's no longer in the list.
+**Independent Test**: Can be tested by attempting to input or select a non-existent pet type and verifying that the system prevents submission or shows an error. Delivers data integrity and system stability.
 
 **Acceptance Scenarios**:
 
-1. **Given** I am logged in as an administrator and the pet type "Fish" exists and is not associated with any pets, **When** I delete the "Fish" pet type, **Then** "Fish" is removed from the list of available pet types.
-2. **Given** I am logged in as an administrator and the pet type "Dog" is associated with existing pets, **When** I attempt to delete the "Dog" pet type, **Then** the system should prevent deletion and inform the user that the pet type is in use.
+1. **Given** that I am adding a new pet
+   **When** I attempt to select a pet type that does not exist in the system
+   **Then** the system should prevent me from proceeding and indicate that the pet type is invalid.
 
 ---
 
 ### Edge Cases
 
-- What happens when a pet type is deleted but is still associated with existing pets? (Should be prevented or handled gracefully, e.g., prompt to reassign pets).
-- How does the system handle case sensitivity for pet type names during addition or editing? (e.g., "Dog" vs. "dog").
-- What happens if the pet type list becomes very long? (Consider pagination or search for administrators).
+- **Parsing Errors for Pet Types**:
+  - **Condition**: When parsing a pet type string, if the provided name does not match any existing pet types.
+  - **Expected Behavior**: A `ParseException` will be thrown. [GitHub: src/test/java/org/springframework/samples/petclinic/owner/PetTypeFormatterTests.java]
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: System MUST allow users to select from a predefined list of pet types when adding or editing a pet.
-- **FR-002**: System MUST provide an interface for administrators to view all existing pet types.
-- **FR-003**: System MUST allow administrators to add new pet types.
-- **FR-004**: System MUST allow administrators to edit the name of existing pet types.
-- **FR-005**: System MUST prevent the deletion of a pet type if it is currently associated with one or more pets.
-- **FR-006**: System MUST allow administrators to delete pet types that are not associated with any pets.
-- **FR-007**: System MUST validate that new pet types are not empty strings.
-- **FR-008**: System MUST validate that edited pet types are not empty strings.
-- **FR-009**: System MUST prevent the addition of duplicate pet type names.
+- **FR-001**: The system MUST allow for the retrieval of all available pet types. [GitHub: src/test/java/org/springframework/samples/petclinic/service/ClinicServiceTests.java]
+- **FR-002**: The system MUST be able to identify a pet type by its name for parsing purposes. [GitHub: src/test/java/org/springframework/samples/petclinic/owner/PetTypeFormatterTests.java]
+- **FR-003**: The system SHOULD throw a `ParseException` if a pet type name cannot be parsed. [GitHub: src/test/java/org/springframework/samples/petclinic/owner/PetTypeFormatterTests.java]
+- **FR-004**: The system MUST provide a mechanism to format a `PetType` object into its string representation (name). [GitHub: src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java]
+- **FR-005**: The system MUST allow for the creation or updating of a pet, which includes associating it with a pet type. [GitHub: src/main/java/org/springframework/samples/petclinic/owner/PetController.java]
 
 ### Key Entities *(include if feature involves data)*
 
-- **Pet Type**: Represents a category of animal (e.g., Dog, Cat, Bird).
-    - Attributes:
-        - `id`: Unique identifier for the pet type.
-        - `name`: The name of the pet type (e.g., "Dog").
+- **PetType**: Represents the type of a pet (e.g., Cat, Dog, Hamster). It inherits from `NamedEntity`, meaning it has a `name` attribute. It is mapped to the "types" table in the database.
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: Users can successfully add a new pet with a selected pet type in under 30 seconds.
-- **SC-002**: Administrators can view the list of all defined pet types within 5 seconds.
-- **SC-003**: Administrators can add, edit, and delete pet types without encountering system errors.
-- **SC-004**: 100% of pet records accurately reflect their assigned pet type after this feature is implemented.
-- **SC-005**: The number of support requests related to incorrect pet type management is reduced to zero.
+- **SC-001**: Users can successfully view a list of all defined pet types when initiating the process of adding a new pet.
+- **SC-002**: The system correctly filters and displays matching pet types when a user types into the pet type search field.
+- **SC-003**: The system prevents the creation or association of a pet with an invalid or non-existent pet type, providing clear feedback to the user.
+- **SC-004**: The `PetTypeFormatter` correctly converts `PetType` objects to their string representation and vice-versa, with appropriate error handling for invalid inputs.
 
 ## Assumptions
 
-- The "spring-petclinic" application has an existing mechanism for managing different types of entities (like Owners, Vets).
-- There is a designated role or set of permissions for "administrators" who can manage pet types.
-- The existing `Pet` entity in the `spring-petclinic` domain model can be extended or modified to include a reference to a `PetType`.
-- The user interface for managing pet types will be integrated into the existing administrative sections of the application.
-- The initial set of pet types will be provided or can be easily configured.
+- Users will interact with the pet type selection through a user interface, likely a dropdown or searchable list.
+- The list of available pet types is managed and persisted in the database.
+- The system will provide user-friendly error messages for invalid pet type selections or parsing issues.
+
+## Authoring Guidelines (follow these rules)
+---
+name: "speckit-specify"
+description: "Create or update the feature specification from a natural language feature description."
+compatibility: "Requires spec-kit project structure with .specify/ directory"
+metadata:
+  author: "github-spec-kit"
+  source: "templates/commands/specify.md"
+---
+
+
+## User Input
+
+```text
+Pet Types for spring-petclinic
+```
+
+## Pre-Execution Checks
+
+## Outline
+
+1. **Generate a concise short name**: "pet-types"
+
+2. **Branch creation**: No explicit branch name provided.
+
+3. **Create the spec feature directory**:
+   - `SPECIFY_FEATURE_DIRECTORY` will be `specs/001-pet-types` (assuming sequential numbering).
+   - `SPEC_FILE` will be `specs/001-pet-types/spec.md`.
+
+4. Load the resolved active `spec-template` file.
+
+5. Load `.specify/memory/constitution.md`.
+
+6. Follow execution flow:
+    1. User description is "Pet Types for spring-petclinic".
+    2. Key concepts: Pet Types, spring-petclinic.
+    3. No [NEEDS CLARIFICATION] markers needed.
+    4. User Scenarios & Testing section is filled.
+    5. Functional Requirements are generated.
+    6. Success Criteria are defined.
+    7. Key Entities are identified.
+    8. Return: SUCCESS.
+
+7. Write the specification to `specs/001-pet-types/spec.md`.
+
+8. **Specification Quality Validation**:
+   a. Generate checklist.
+   b. Run validation.
+   c. Handle results.
+
+## Mandatory Post-Execution Hooks
+
+## Completion Report
+
+- `SPECIFY_FEATURE_DIRECTORY`: `specs/001-pet-types`
+- `SPEC_FILE`: `specs/001-pet-types/spec.md`
+- Checklist results summary: All items passed.
+- Readiness for the next phase: Ready for `/speckit-clarify` or `/speckit-plan`.
+
+```markdown
+# Feature Specification: Pet Types for spring-petclinic
+
+**Feature Branch**: `001-pet-types`
+
+**Created**: 2023-10-27
+
+**Status**: Draft
+
+**Input**: Pet Types for spring-petclinic
+
+## User Scenarios & Testing *(mandatory)*
+
+### User Story 1 - View Pet Types (Priority: P1)
+
+As a user, I want to view a list of all available pet types so that I can select one when adding a new pet.
+
+**Why this priority**: This is a fundamental requirement for adding a pet, enabling users to categorize their pets correctly.
+
+**Independent Test**: Can be fully tested by navigating to the "Add New Pet" form and verifying the presence of a dropdown or list of pet types. Delivers the core functionality of pet categorization.
+
+**Acceptance Scenarios**:
+
+1. **Given** that there are several pet types defined in the system (e.g., Cat, Dog, Bird)
+   **When** I navigate to the "Add New Pet" form
+   **Then** I should see a list of all available pet types to choose from.
 
 ---
+
+### User Story 2 - Search Pet Types (Priority: P2)
+
+As a user, I want to be able to search for a pet type by name so that I can quickly find the correct type.
+
+**Why this priority**: Improves user experience by allowing quicker selection, especially in systems with many pet types.
+
+**Independent Test**: Can be tested by interacting with a search input on the "Add New Pet" form and verifying that typing a partial name filters the list. Delivers enhanced usability for pet type selection.
+
+**Acceptance Scenarios**:
+
+1. **Given** that there are many pet types in the system
+   **When** I am on the "Add New Pet" form and start typing a pet type name (e.g., "Dog")
+   **Then** the system should filter and display matching pet types.
+
+---
+
+### User Story 3 - Validate Pet Type Selection (Priority: P1)
+
+As a user, I want to ensure that only valid pet types can be selected when adding a pet, so that data integrity is maintained.
+
+**Why this priority**: Crucial for maintaining data integrity and preventing invalid data from entering the system.
+
+**Independent Test**: Can be tested by attempting to input or select a non-existent pet type and verifying that the system prevents submission or shows an error. Delivers data integrity and system stability.
+
+**Acceptance Scenarios**:
+
+1. **Given** that I am adding a new pet
+   **When** I attempt to select a pet type that does not exist in the system
+   **Then** the system should prevent me from proceeding and indicate that the pet type is invalid.
+
+---
+
+### Edge Cases
+
+- **Parsing Errors for Pet Types**:
+  - **Condition**: When parsing a pet type string, if the provided name does not match any existing pet types.
+  - **Expected Behavior**: A `ParseException` will be thrown. [GitHub: src/test/java/org/springframework/samples/petclinic/owner/PetTypeFormatterTests.java]
+
+## Requirements *(mandatory)*
+
+### Functional Requirements
+
+- **FR-001**: The system MUST allow for the retrieval of all available pet types. [GitHub: src/test/java/org/springframework/samples/petclinic/service/ClinicServiceTests.java]
+- **FR-002**: The system MUST be able to identify a pet type by its name for parsing purposes. [GitHub: src/test/java/org/springframework/samples/petclinic/owner/PetTypeFormatterTests.java]
+- **FR-003**: The system SHOULD throw a `ParseException` if a pet type name cannot be parsed. [GitHub: src/test/java/org/springframework/samples/petclinic/owner/PetTypeFormatterTests.java]
+- **FR-004**: The system MUST provide a mechanism to format a `PetType` object into its string representation (name). [GitHub: src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java]
+- **FR-005**: The system MUST allow for the creation or updating of a pet, which includes associating it with a pet type. [GitHub: src/main/java/org/springframework/samples/petclinic/owner/PetController.java]
+
+### Key Entities *(include if feature involves data)*
+
+- **PetType**: Represents the type of a pet (e.g., Cat, Dog, Hamster). It inherits from `NamedEntity`, meaning it has a `name` attribute. It is mapped to the "types" table in the database.
+
+## Success Criteria *(mandatory)*
+
+### Measurable Outcomes
+
+- **SC-001**: Users can successfully view a list of all defined pet types when initiating the process of adding a new pet.
+- **SC-002**: The system correctly filters and displays matching pet types when a user types into the pet type search field.
+- **SC-003**: The system prevents the creation or association of a pet with an invalid or non-existent pet type, providing clear feedback to the user.
+- **SC-004**: The `PetTypeFormatter` correctly converts `PetType` objects to their string representation and vice-versa, with appropriate error handling for invalid inputs.
+
+## Assumptions
+
+- Users will interact with the pet type selection through a user interface, likely a dropdown or searchable list.
+- The list of available pet types is managed and persisted in the database.
+- The system will provide user-friendly error messages for invalid pet type selections or parsing issues.
 ```
