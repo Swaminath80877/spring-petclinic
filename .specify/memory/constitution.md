@@ -1,50 +1,5 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
-
-## Core Principles
-
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
-
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
-
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
-
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
-
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
-
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
-
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
-
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
-
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
-
-## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
-
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
-
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+{
+  "status": "success",
+  "repository": "Swaminath80877/spring-petclinic",
+  "constitution": "# Spring PetClinic Constitution\n\n## Core Principles\n\n### I. Layered Architecture Adherence\nEvery component MUST reside within its designated architectural layer (Controller, Repository, Domain/Model, Configuration, Test). Components MUST NOT directly depend on components in layers below them, except through defined interfaces or service abstractions. This ensures clear separation of concerns and maintainability.\n\n### II. Spring Boot Convention and Best Practices\nThe project MUST leverage Spring Boot's auto-configuration and idiomatic patterns. Configuration MUST be managed via application properties or Java-based configuration classes. Dependency injection MUST be used for component wiring.\n\n### III. Comprehensive Test Coverage (NON-NEGOTIABLE)\nAll new features and bug fixes MUST be accompanied by unit and integration tests. Unit tests MUST focus on individual components, while integration tests MUST verify interactions between layers and external dependencies (e.g., database, external services). Test coverage MUST be maintained at a high level, with specific targets defined in the Quality Gates section.\n\n### IV. Data Persistence Abstraction\nData access MUST be managed through Spring Data repositories. Direct SQL queries or manual JDBC operations are discouraged unless absolutely necessary and clearly justified. Entities MUST adhere to JPA standards.\n\n### V. Observability and Logging\nAll significant application events, errors, and state changes MUST be logged using a structured logging format. The project MUST support runtime configuration of logging levels.\n\n## Development Workflow\n\n### Code Review and Quality Gates\nAll pull requests MUST undergo a thorough code review by at least one other team member. Reviews MUST verify adherence to architectural principles, coding standards, and test coverage requirements. Automated checks, including static analysis and unit/integration tests, MUST pass before a pull request can be merged.\n\n### Versioning and Breaking Changes\nThe project follows Semantic Versioning (MAJOR.MINOR.PATCH). Breaking changes MUST be clearly documented and require a MAJOR version increment. Backward compatibility MUST be maintained for minor and patch releases.\n\n### Security Considerations\nAll external inputs MUST be validated to prevent common vulnerabilities. Sensitive data MUST be handled with appropriate security measures. Dependencies MUST be kept up-to-date to mitigate known security risks.\n\n## Governance\nThis Constitution supersedes all other informal practices and guidelines. Amendments to this Constitution require a formal proposal, review by the core development team, and a documented migration plan if necessary. Compliance with this Constitution is a mandatory requirement for all code merged into the main branch. Any deviation MUST be explicitly approved and documented.\n\n**Version**: 1.0.0 | **Ratified**: 2026-08-27 | **Last Amended**: 2026-08-27"
+}
