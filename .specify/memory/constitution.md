@@ -1,5 +1,42 @@
-{
-  "status": "success",
-  "repository": "Swaminath80877/spring-petclinic",
-  "constitution": "# Spring PetClinic Constitution\n\n## Core Principles\n\n### I. Layered Architecture Adherence\nEvery component MUST reside within its designated architectural layer (Controller, Repository, Domain/Model, Configuration, Test). Components MUST NOT directly depend on components in layers below them, except through defined interfaces or service abstractions. This ensures clear separation of concerns and maintainability.\n\n### II. Spring Boot Convention and Best Practices\nThe project MUST leverage Spring Boot's auto-configuration and idiomatic patterns. Configuration MUST be managed via application properties or Java-based configuration classes. Dependency injection MUST be used for component wiring.\n\n### III. Comprehensive Test Coverage (NON-NEGOTIABLE)\nAll new features and bug fixes MUST be accompanied by unit and integration tests. Unit tests MUST focus on individual components, while integration tests MUST verify interactions between layers and external dependencies (e.g., database, external services). Test coverage MUST be maintained at a high level, with specific targets defined in the Quality Gates section.\n\n### IV. Data Persistence Abstraction\nData access MUST be managed through Spring Data repositories. Direct SQL queries or manual JDBC operations are discouraged unless absolutely necessary and clearly justified. Entities MUST adhere to JPA standards.\n\n### V. Observability and Logging\nAll significant application events, errors, and state changes MUST be logged using a structured logging format. The project MUST support runtime configuration of logging levels.\n\n## Development Workflow\n\n### Code Review and Quality Gates\nAll pull requests MUST undergo a thorough code review by at least one other team member. Reviews MUST verify adherence to architectural principles, coding standards, and test coverage requirements. Automated checks, including static analysis and unit/integration tests, MUST pass before a pull request can be merged.\n\n### Versioning and Breaking Changes\nThe project follows Semantic Versioning (MAJOR.MINOR.PATCH). Breaking changes MUST be clearly documented and require a MAJOR version increment. Backward compatibility MUST be maintained for minor and patch releases.\n\n### Security Considerations\nAll external inputs MUST be validated to prevent common vulnerabilities. Sensitive data MUST be handled with appropriate security measures. Dependencies MUST be kept up-to-date to mitigate known security risks.\n\n## Governance\nThis Constitution supersedes all other informal practices and guidelines. Amendments to this Constitution require a formal proposal, review by the core development team, and a documented migration plan if necessary. Compliance with this Constitution is a mandatory requirement for all code merged into the main branch. Any deviation MUST be explicitly approved and documented.\n\n**Version**: 1.0.0 | **Ratified**: 2026-08-27 | **Last Amended**: 2026-08-27"
-}
+# Spring PetClinic Constitution
+
+## Core Principles
+
+### I. Layered Architecture Adherence
+Every component MUST reside within its designated architectural layer (Controller, Repository, Model, Configuration, Service, etc.). Cross-layer dependencies MUST follow a strict top-down flow (e.g., Controllers depend on Services, Services depend on Repositories). Direct dependencies between non-adjacent layers are prohibited.
+
+### II. Test Coverage Mandate
+All new features and bug fixes MUST be accompanied by comprehensive unit and integration tests. Unit tests MUST cover individual components (e.g., Controllers, Services, Models) in isolation. Integration tests MUST verify interactions between components and with external systems (e.g., database, external APIs). A minimum of 80% code coverage for new code is required.
+
+### III. Spring Boot Convention Compliance
+The project MUST adhere to Spring Boot conventions for configuration, dependency injection, and application bootstrapping. Auto-configuration SHOULD be leveraged where appropriate, and custom configurations MUST be clearly documented and placed in dedicated configuration classes.
+
+### IV. Data Persistence Integrity
+All data persistence operations MUST be handled exclusively by components within the Repository layer. Domain entities MUST be designed to be POJOs with appropriate JPA annotations. Data access logic MUST be separated from business logic.
+
+### V. RESTful API Design
+Controller layer components MUST implement RESTful APIs following standard HTTP methods (GET, POST, PUT, DELETE) and status codes. Request and response payloads SHOULD be in JSON format.
+
+## Additional Constraints
+
+**Technology Stack**: The project MUST utilize Java, Spring Boot, Spring Data JPA, and Thymeleaf for templating. External dependencies MUST be managed via Maven.
+
+**Database**: The primary database is relational (e.g., MySQL, PostgreSQL). Integration tests MUST validate functionality against at least one supported relational database.
+
+**Containerization**: The project MUST be containerizable using Docker, with a `Dockerfile` and potentially Kubernetes manifests provided in the `k8s/` directory.
+
+## Development Workflow
+
+**Branching Strategy**: Feature development MUST occur on dedicated feature branches. Pull Requests (PRs) MUST be created from feature branches to the main development branch.
+
+**Code Reviews**: All PRs MUST undergo at least one thorough code review by a team member. Reviews MUST verify adherence to this constitution, code quality, and test coverage.
+
+**CI/CD**: Continuous Integration (CI) MUST be configured to automatically build, test, and analyze code on every commit to feature branches and on merges to the main development branch. Continuous Deployment (CD) SHOULD be implemented for stable releases.
+
+**Issue Tracking**: All development tasks, bugs, and feature requests MUST be tracked using an issue tracking system.
+
+## Governance
+
+This constitution supersedes all other development practices and guidelines for the Spring PetClinic project. Amendments to this constitution require a formal proposal, documented justification, and approval by a majority of the core development team. Any approved amendments MUST include a plan for migrating existing code and practices to comply with the changes. All Pull Requests and code reviews MUST explicitly verify compliance with this constitution.
+
+**Version**: 1.0.0 | **Ratified**: 2026-08-27 | **Last Amended**: 2026-08-27
