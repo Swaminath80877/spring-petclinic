@@ -1,34 +1,42 @@
-# Spring PetClinic Constitution
+# Spring Petclinic Constitution
 
 ## Core Principles
 
 ### I. Layered Architecture Adherence
-Every component MUST reside within its designated architectural layer (Controller, Repository, Domain/Model, Configuration, Test, System). Cross-layer dependencies MUST follow a strict top-down flow (Controller -> Service -> Repository -> Domain). Direct dependencies between non-adjacent layers are prohibited.
+Every component MUST reside within its designated architectural layer (Controller, Repository, Model, Configuration, Service, etc.). Direct dependencies MUST only flow downwards (e.g., Controllers depend on Services, Services depend on Repositories). Cross-layer dependencies are forbidden.
 
-### II. Spring Boot Convention and Best Practices
-The project MUST leverage Spring Boot's auto-configuration and idiomatic patterns. Configuration MUST be managed via `application.properties` or `@Configuration` classes. Dependency Injection MUST be used for component wiring.
+### II. Test Coverage Mandate
+All new features and bug fixes MUST be accompanied by comprehensive unit and integration tests. Unit tests MUST cover individual components, while integration tests MUST validate interactions between layers and external dependencies (e.g., database, external APIs). A minimum of 80% code coverage for new code is required.
 
-### III. Comprehensive Test Coverage (NON-NEGOTIABLE)
-All new features and bug fixes MUST be accompanied by unit and integration tests. Unit tests MUST focus on individual component logic, while integration tests MUST verify interactions between components and external systems (e.g., database, external APIs). Test coverage MUST be maintained above 80%.
+### III. Spring Boot Convention Compliance
+The project MUST strictly adhere to Spring Boot conventions for configuration, dependency injection, and application startup. This includes leveraging auto-configuration where appropriate and using standard annotations (`@Autowired`, `@Service`, `@Repository`, `@Controller`, etc.).
 
-### IV. Data Persistence Abstraction
-Data access logic MUST be encapsulated within Repository interfaces, leveraging Spring Data JPA. Direct SQL queries within service or controller layers are forbidden. Entity classes MUST adhere to JPA specifications.
+### IV. Data Persistence Integrity
+All data persistence operations MUST be handled exclusively by components within the Repository layer. Direct database access from other layers is prohibited. JPA entities MUST be clearly defined and adhere to standard ORM practices.
 
 ### V. Observability and Logging
-All components MUST implement structured logging for critical operations, errors, and significant events. Log levels MUST be configurable. The project MUST be designed to support external monitoring tools.
+All significant application events, errors, and state changes MUST be logged using structured logging. The logging framework MUST be configured to provide sufficient detail for debugging and monitoring, with clear separation between different log levels (INFO, WARN, ERROR).
+
+## Additional Constraints
+
+The project MUST utilize Java as the primary programming language.
+The project MUST be built using Maven.
+The project MUST be compatible with recent stable versions of Spring Boot and Jakarta EE.
+Database interactions MUST be managed via Spring Data JPA.
+The project MUST support internationalization (i18n) for user-facing messages, as evidenced by the `I18nPropertiesSyncTest`.
 
 ## Development Workflow
 
-### Code Review and Quality Gates
-All pull requests MUST undergo a thorough code review by at least one other team member. Reviews MUST verify adherence to architectural principles, coding standards, and test coverage. Automated checks (e.g., static analysis, unit tests) MUST pass before merging.
-
-### Versioning and Breaking Changes
-The project follows Semantic Versioning (MAJOR.MINOR.PATCH). Breaking changes MUST be clearly documented and require a MAJOR version increment. Backward compatibility MUST be maintained where feasible.
-
-### Security Considerations
-All external inputs MUST be validated and sanitized. Sensitive data MUST be handled with appropriate security measures. Dependencies MUST be regularly scanned for vulnerabilities.
+All code changes MUST be submitted via Pull Requests (PRs).
+Each PR MUST be reviewed by at least one other team member.
+Automated checks, including static analysis and unit/integration tests, MUST pass before a PR can be merged.
+The `.devcontainer` configuration MUST be used for consistent development environments.
 
 ## Governance
-This Constitution supersedes all other development practices for the Spring PetClinic repository. Amendments to this Constitution require a formal proposal, review by the core development team, and a majority approval. All proposed amendments MUST include a migration plan if necessary. Compliance with this Constitution is a mandatory requirement for all code merged into the main branch.
+
+This constitution supersedes all other development practices for the Spring Petclinic repository.
+Amendments to this constitution require a formal proposal, review by the core development team, and a majority approval.
+All PRs and code reviews MUST verify compliance with these principles.
+Any deviation from these principles MUST be explicitly justified and documented.
 
 **Version**: 1.0.0 | **Ratified**: 2026-08-28 | **Last Amended**: 2026-08-28
