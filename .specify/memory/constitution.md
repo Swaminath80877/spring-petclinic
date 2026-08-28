@@ -1,35 +1,34 @@
-# Spring Petclinic Constitution
+# Spring PetClinic Constitution
 
 ## Core Principles
 
 ### I. Layered Architecture Adherence
-Every component MUST reside within its designated architectural layer (Controller, Repository, Domain/Model, Configuration, Test). Cross-layer dependencies MUST strictly follow the defined hierarchy (e.g., Controllers depend on Services, Services depend on Repositories). Direct dependencies between unrelated layers are prohibited.
+Every component MUST reside within its designated architectural layer (Controller, Repository, Domain/Model, Configuration, Test, System). Components MUST NOT cross layer boundaries inappropriately (e.g., a Controller directly accessing a Repository without service intervention).
 
 ### II. Spring Boot Convention and Best Practices
-The project MUST leverage Spring Boot conventions for configuration, auto-configuration, and dependency injection. All components MUST be annotated appropriately (e.g., `@Controller`, `@Repository`, `@Service`, `@Configuration`). Use of Jakarta Persistence API (JPA) for data access is mandatory for entities and repositories.
+The project MUST leverage Spring Boot's auto-configuration and conventions. Configuration MUST be managed via `@Configuration` classes and properties files. Dependency Injection MUST be used extensively via `@Autowired` and constructor injection.
 
 ### III. Comprehensive Test Coverage (NON-NEGOTIABLE)
-All new features and bug fixes MUST include corresponding unit and integration tests. Unit tests MUST focus on individual components in isolation, while integration tests MUST verify interactions between components and with external systems (e.g., database). Test coverage MUST be maintained at a high level, with specific targets defined in the Quality Gates section.
+All new features and bug fixes MUST be accompanied by unit and integration tests. Unit tests MUST focus on individual components, while integration tests MUST verify interactions between layers and external dependencies (e.g., database, external services). Test coverage MUST be maintained at a high level, with specific targets defined in the Quality Gates section.
 
-### IV. Observability and Logging
-All significant application events, errors, and state changes MUST be logged using structured logging. The application MUST be designed to facilitate monitoring and debugging through appropriate logging levels and clear log messages. Internationalization (i18n) properties MUST be managed and synchronized to ensure consistent user experience across languages.
+### IV. Domain Model Integrity
+Domain entities (e.g., `Owner`, `Pet`, `Vet`) MUST be defined as Plain Old Java Objects (POJOs) with appropriate JPA annotations for persistence. Business logic related to these entities SHOULD be encapsulated within the domain or service layer, not directly in controllers or repositories.
 
-### V. Domain-Driven Design Principles
-Core business entities (e.g., `Owner`, `Pet`, `Vet`, `Visit`) MUST encapsulate their behavior and data. Relationships between entities MUST be clearly defined and managed through appropriate JPA annotations and repository methods. Validation rules MUST be applied at the domain level using Jakarta Bean Validation annotations.
+### V. Observability and Configuration
+Application behavior MUST be configurable through external properties. Logging MUST be used effectively for debugging and monitoring, adhering to standard Spring Boot logging practices. Internationalization (i18n) MUST be handled consistently using Spring's i18n mechanisms.
 
 ## Development Workflow
 
-### Code Review and Quality Gates
-All code changes MUST undergo a mandatory code review process. Pull requests will only be merged after approval from at least one other team member. Automated checks, including static analysis and test execution, MUST pass before a pull request can be merged. Specific quality gates include:
-- 100% of new code MUST be covered by unit tests.
-- All integration tests MUST pass.
-- No critical or major static analysis warnings.
-- Successful synchronization of i18n properties.
+### Code Review Process
+All code changes MUST undergo a peer review via Pull Requests (PRs). Reviewers MUST verify adherence to the core principles, coding standards, and test coverage requirements. PRs MUST not be merged without at least one approval.
 
-### Versioning and Breaking Changes
-The project follows Semantic Versioning (MAJOR.MINOR.PATCH). Breaking changes MUST be clearly documented and require a MAJOR version increment. Backward compatibility MUST be maintained where feasible. Any changes that could impact existing integrations or deployments MUST be communicated proactively.
+### Quality Gates
+- **Unit Test Coverage:** Minimum 80% coverage for all new code.
+- **Integration Test Coverage:** All critical workflows and cross-layer interactions MUST be covered.
+- **Static Analysis:** Code MUST pass all checks from configured static analysis tools (e.g., SonarQube, Checkstyle).
+- **Build Success:** All CI/CD pipelines MUST pass before deployment.
 
 ## Governance
-This Constitution supersedes all other informal development practices. Amendments to this Constitution require a formal proposal, documentation of the rationale, and approval by a majority of the core development team. Compliance with this Constitution is a prerequisite for code merging. Any deviation from these principles MUST be explicitly justified and approved.
+This Constitution supersedes all other development practices for the Spring PetClinic project. Amendments to this Constitution require a formal proposal, review by the core development team, and a majority approval. Any approved amendments MUST include a plan for migrating existing code and practices to comply with the new rules. All code reviews MUST explicitly check for compliance with this Constitution.
 
 **Version**: 1.0.0 | **Ratified**: 2026-08-28 | **Last Amended**: 2026-08-28
