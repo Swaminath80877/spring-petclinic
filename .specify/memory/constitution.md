@@ -1,43 +1,5 @@
-# Spring Petclinic Constitution
-
-## Core Principles
-
-### I. Layered Architecture Adherence
-Every component MUST reside within its designated architectural layer (Controller, Repository, Model, Configuration, Service, etc.). Cross-layer dependencies MUST be strictly unidirectional, flowing from higher layers to lower layers. Direct dependencies between non-adjacent layers are prohibited.
-
-### II. Test Coverage Mandate
-All new features and bug fixes MUST be accompanied by comprehensive unit and integration tests. Unit tests MUST cover individual components in isolation, while integration tests MUST validate interactions between components and with external systems (e.g., database). Existing tests MUST be maintained and updated to reflect code changes.
-
-### III. Spring Boot Convention Compliance
-The project MUST adhere to Spring Boot conventions for configuration, dependency injection, and component scanning. Auto-configuration SHOULD be leveraged where appropriate, and custom configurations MUST be clearly documented and justified.
-
-### IV. Data Persistence Integrity
-All data persistence operations MUST be handled exclusively by components within the Repository layer. Domain entities MUST be designed to be POJOs with appropriate JPA annotations. Data access logic MUST be kept separate from business logic.
-
-### V. RESTful API Design
-Controller layer components MUST implement RESTful APIs following standard HTTP methods and status codes. Request and response payloads SHOULD be designed for clarity and efficiency, utilizing DTOs where necessary to decouple API contracts from internal domain models.
-
-## Additional Constraints
-
-The project MUST utilize Java as the primary programming language.
-The project MUST use Maven as the build tool.
-The project MUST be compatible with recent stable versions of Spring Boot and its associated dependencies.
-Database interactions MUST be managed via Spring Data JPA.
-Internationalization (i18n) MUST be handled using Spring's message source capabilities, with all user-facing strings externalized.
-
-## Development Workflow
-
-All code changes MUST be submitted via Pull Requests (PRs).
-Each PR MUST include a clear description of the changes and the problem it solves.
-All PRs MUST pass automated checks, including compilation, unit tests, and integration tests.
-Code reviews are mandatory for all PRs, with at least one approval required before merging.
-New features SHOULD follow an iterative development process, with frequent commits and PRs.
-
-## Governance
-
-This Constitution supersedes all other development practices for the Spring Petclinic repository.
-Amendments to this Constitution require a formal proposal, documentation of the rationale, and approval by a majority of core maintainers.
-All Pull Requests and code reviews MUST verify compliance with the principles outlined in this Constitution.
-Any deviation from these principles MUST be explicitly justified and approved by the project lead.
-
-**Version**: 1.0.0 | **Ratified**: 2026-08-28 | **Last Amended**: 2026-08-28
+{
+  "status": "error",
+  "message": "429 Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.",
+  "traceback": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.12/site-packages/google/api_core/grpc_helpers.py\", line 75, in error_remapped_callable\n    return callable_(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/grpc/_channel.py\", line 1168, in __call__\n    return _end_unary_response_blocking(state, call, False, None)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/grpc/_channel.py\", line 999, in _end_unary_response_blocking\n    raise _InactiveRpcError(state)  # pytype: disable=not-instantiable\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ngrpc._channel._InactiveRpcError: <_InactiveRpcError of RPC that terminated with:\n\tstatus = StatusCode.RESOURCE_EXHAUSTED\n\tdetails = \"Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.\"\n\tdebug_error_string = \"RESOURCE_EXHAUSTED:Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.\"\n>\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/app/mcp_server.py\", line 1246, in generate_constitution\n    output_path = agent.generate(owner, repo)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/agents/constitution_agent.py\", line 214, in generate\n    constitution_md = llm.generate(prompt)\n                      ^^^^^^^^^^^^^^^^^^^^\n  File \"/app/llm/gemini_client.py\", line 40, in generate\n    response = self.model.generate_content(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/vertexai/generative_models/_generative_models.py\", line 654, in generate_content\n    return self._generate_content(\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/vertexai/generative_models/_generative_models.py\", line 779, in _generate_content\n    gapic_response = self._prediction_client.generate_content(request=request)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/google/cloud/aiplatform_v1/services/prediction_service/client.py\", line 2159, in generate_content\n    response = rpc(\n               ^^^^\n  File \"/usr/local/lib/python3.12/site-packages/google/api_core/gapic_v1/method.py\", line 131, in __call__\n    return wrapped_func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/google/api_core/grpc_helpers.py\", line 77, in error_remapped_callable\n    raise exceptions.from_grpc_error(exc) from exc\ngoogle.api_core.exceptions.ResourceExhausted: 429 Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.\n"
+}
