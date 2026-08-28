@@ -1,4 +1,4 @@
-# Feature Specification: Owner Management
+# Feature Specification: Owners for Spring Petclinic
 
 **Feature Branch**: `010-owners-spring-petclinic`
 
@@ -12,130 +12,123 @@
 
 ### User Story 1 - Find Owners by Last Name (Priority: P1)
 
-Users should be able to search for owners by their last name. This is a primary function for navigating the application and finding specific owner records.
+A user needs to be able to quickly find existing owners by searching for a portion of their last name. This is crucial for accessing owner details and managing their pets.
 
-**Why this priority**: This is a core navigation and lookup feature, essential for daily use of the application.
+**Why this priority**: This is a core functionality for navigating and managing owner data, essential for daily operations.
 
-**Independent Test**: Can be fully tested by navigating to the "Find Owners" page, entering a last name, and verifying the correct list of owners is displayed.
+**Independent Test**: Can be fully tested by entering a last name prefix in the search field and verifying the returned list of owners. Delivers the ability to locate specific owners.
 
 **Acceptance Scenarios**:
 
-1. **Given** the user is on the "Find Owners" page, **When** they enter "Davis" into the last name search field and click "Search", **Then** a list of owners whose last name starts with "Davis" is displayed.
-2. **Given** the user is on the "Find Owners" page, **When** they enter a last name that does not exist in the system and click "Search", **Then** a "notFound" message is displayed on the last name field, and the user remains on the "Find Owners" page.
+1. **Given** a list of owners exists with last names like "Smith", "Smythe", "Jones",
+**When** a user searches for owners with the last name prefix "Sm",
+**Then** a list containing "Smith" and "Smythe" is displayed.
+2. **Given** a list of owners exists,
+**When** a user searches for an owner last name prefix that does not match any existing owners,
+**Then** a message indicating "No owners found" is displayed.
 
 ---
 
-### User Story 2 - Create a New Owner (Priority: P1)
+### User Story 2 - Create a New Owner (Priority: P2)
 
-Users should be able to add new owners to the system through a dedicated form.
+A user needs to be able to add new owners to the system, providing all necessary contact and address information.
 
-**Why this priority**: This is a fundamental data entry feature, enabling the growth of the owner database.
+**Why this priority**: Essential for onboarding new clients and expanding the customer base.
 
-**Independent Test**: Can be fully tested by navigating to the "Add Owner" form, filling in all required fields with valid data, submitting the form, and verifying the new owner appears in the system and their details can be viewed.
+**Independent Test**: Can be fully tested by navigating to the new owner form, filling in valid details, submitting, and verifying the owner appears in the owner list. Delivers the ability to register new clients.
 
 **Acceptance Scenarios**:
 
-1. **Given** the user is on the "Add Owner" page, **When** they fill in all required fields (first name, last name, address, city, telephone) with valid data and click "Submit", **Then** the new owner is created, and the user is redirected to the owner's detail page.
-2. **Given** the user is on the "Add Owner" page, **When** they leave the "First Name" field blank and click "Submit", **Then** a validation error message "required" is displayed for the "First Name" field, and the owner is not created.
+1. **Given** a user is on the "New Owner" form,
+**When** they enter valid first name, last name, address, city, and telephone number, and submit the form,
+**Then** the new owner is created and the user is redirected to the owner's list page, displaying the newly added owner.
 
 ---
 
-### User Story 3 - View Owner Details (Priority: P2)
+### User Story 3 - View Owner Details (Priority: P3)
 
-Users should be able to view the complete details of an existing owner, including their personal information and associated pets.
+A user needs to be able to view all the details of a specific owner, including their personal information and associated pets.
 
-**Why this priority**: This allows users to access and review all information related to a specific owner.
+**Why this priority**: Allows for quick access to comprehensive owner information for customer service and management.
 
-**Independent Test**: Can be fully tested by finding an existing owner (via search or direct link) and verifying all their associated data is displayed correctly.
+**Independent Test**: Can be fully tested by selecting an owner from the list and verifying all their details and pets are displayed correctly. Delivers the ability to review all information about a specific owner.
 
 **Acceptance Scenarios**:
 
-1. **Given** an owner named "John Doe" exists with associated pets, **When** the user navigates to John Doe's owner detail page, **Then** the owner's first name, last name, address, city, telephone, and a list of their pets (including pet names and types) are displayed.
+1. **Given** an owner exists in the system,
+**When** the user navigates to the owner's details page (e.g., by clicking on their name in the owner list),
+**Then** all owner attributes (first name, last name, address, city, telephone) and a list of their associated pets are displayed.
 
 ---
 
-### User Story 4 - Edit Owner Details (Priority: P2)
+### User Story 4 - Add a New Pet for an Existing Owner (Priority: P2)
 
-Users should be able to modify the information of an existing owner.
+A user needs to be able to add a new pet to an existing owner's record, providing pet details like name, birth date, and type.
 
-**Why this priority**: Allows for correction of errors or updating of owner information.
+**Why this priority**: Allows for comprehensive management of an owner's animal companions.
 
-**Independent Test**: Can be fully tested by finding an owner, navigating to their edit page, making a change to a field, saving it, and verifying the change is reflected on the owner's detail page.
-
-**Acceptance Scenarios**:
-
-1. **Given** the user is viewing the details of an owner, **When** they click the "Edit Owner" button, **Then** they are presented with a form pre-populated with the owner's current information.
-2. **Given** the user is on the "Edit Owner" form, **When** they change the owner's telephone number and click "Submit", **Then** the owner's telephone number is updated, and the user is redirected to the owner's detail page showing the new telephone number.
-
----
-
-### User Story 5 - Add a New Pet for an Owner (Priority: P3)
-
-Users should be able to add a new pet to an existing owner's record.
-
-**Why this priority**: Essential for managing an owner's pets within the system.
-
-**Independent Test**: Can be fully tested by navigating to an owner's detail page, initiating the "Add Pet" action, filling out the pet form with valid data, and verifying the new pet is listed under the owner.
+**Independent Test**: Can be fully tested by selecting an owner, navigating to the "Add New Pet" form, filling in valid pet details, and verifying the pet is associated with the owner. Delivers the ability to register new pets for clients.
 
 **Acceptance Scenarios**:
 
-1. **Given** the user is viewing an owner's details, **When** they click "Add New Pet", **Then** they are presented with a form to enter pet details (name, birth date, type).
-2. **Given** the user is on the "Add Pet" form for an owner, **When** they enter a valid pet name, select a pet type, and enter a valid birth date, and click "Submit", **Then** the new pet is associated with the owner, and the owner's pet list is updated.
+1. **Given** an existing owner is selected,
+**When** the user navigates to the "Add New Pet" form for that owner, enters a valid pet name, birth date, and selects a pet type, and submits the form,
+**Then** the new pet is created and associated with the owner, and the owner's pet list is updated.
 
 ---
 
 ### Edge Cases
 
-- What happens when an owner is created or updated with a blank first name? → Validation error on the "First Name" field.
-- What happens when an owner is created or updated with a blank last name? → Validation error on the "Last Name" field.
-- What happens when an owner is created or updated with a telephone number that is not exactly 10 digits? → Validation error on the "Telephone" field.
-- What happens when an owner is created or updated with a blank address? → Validation error on the "Address" field.
-- What happens when an owner is created or updated with a blank city? → Validation error on the "City" field.
-- What happens when attempting to edit or view an owner with an ID that does not exist? → An `IllegalArgumentException` is thrown, and an appropriate error page is displayed.
-- What happens when attempting to create or update a pet with a blank name? → Validation error on the "Name" field.
-- What happens when attempting to create or update a pet without selecting a pet type? → Validation error on the "Type" field.
-- What happens when attempting to add a pet with a name that already exists for the same owner? → Validation error on the "Name" field indicating a duplicate.
-- What happens when attempting to create or update a pet with an invalid birth date format? → Validation error indicating a type mismatch for the birth date.
-- What happens when attempting to book a visit with a blank date? → Validation error on the "Date" field.
-- What happens when attempting to book a visit with a date that is in the past? → Validation error indicating the visit date must be in the future.
-- What happens when attempting to book a visit for an owner ID that does not exist? → An `IllegalArgumentException` is thrown, and an appropriate error page is displayed.
-- What happens when attempting to book a visit for a pet ID that does not exist for a given owner? → An `IllegalArgumentException` is thrown, and an appropriate error page is displayed.
+- What happens when an owner is created or updated with a blank address?
+- What happens when an owner is created or updated with a blank city?
+- How does the system handle an owner's telephone number that does not consist of exactly 10 digits?
+- What happens when a pet is created or updated with a blank name?
+- How does the system handle creating or updating a pet without selecting a pet type?
+- What happens when attempting to create a pet with a name that already exists for the same owner?
+- How does the system handle creating or updating a pet with a birth date in an incorrect format?
+- What happens when a visit is booked with a date that is on or before the current date?
+- How does the system handle attempting to add a visit for a pet ID that does not exist for a given owner?
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: System MUST allow the creation of a new owner with first name, last name, address, city, and telephone.
-- **FR-002**: System MUST allow searching for owners by last name.
-- **FR-003**: System MUST display owner details, including their pets.
-- **FR-004**: System MUST allow updating an existing owner's details.
-- **FR-005**: System MUST allow the creation of a new pet for an existing owner, including pet name, birth date, and type.
-- **FR-006**: System SHOULD validate pet information (name, birth date, type) before saving.
-- **FR-007**: System SHOULD allow the retrieval of an owner by their last name.
-- **FR-008**: System SHOULD allow updating a pet's name.
+- **FR-001**: System MUST allow the creation of a new pet for an existing owner.
+- **FR-002**: System MUST display a form to create or update a pet, pre-populated with owner details.
+- **FR-003**: System SHOULD validate pet information before saving.
+- **FR-004**: System SHOULD allow the user to select a pet type from a predefined list.
+- **FR-005**: System SHOULD handle cases where an owner is not found when attempting to add a pet.
+- **FR-006**: System MUST allow the creation of a new owner.
+- **FR-007**: System MUST validate owner information (first name, last name, address, city, telephone) before saving.
+- **FR-008**: System MUST allow searching for owners by last name prefix.
+- **FR-009**: System MUST display owner details, including their pets.
+- **FR-010**: System MUST allow the creation of a new visit for an existing pet.
+- **FR-011**: System MUST validate visit information (date, description) before saving.
 
 ### Key Entities *(include if feature involves data)*
 
-- **Owner**: Represents an individual owner of pets. Attributes include first name, last name, address, city, and telephone number. An owner can have multiple pets.
-- **Pet**: Represents an animal owned by an owner. Attributes include name, birth date, and type. A pet belongs to one owner and has one pet type.
-- **PetType**: Represents the species of a pet (e.g., Cat, Dog). Attributes include the name of the pet type.
-- **Visit**: Represents a veterinary visit for a pet. Attributes include the date of the visit.
+- **Owner**: Represents an individual owner of pets. Key attributes include first name, last name, address, city, and telephone number. An owner can have multiple pets.
+- **Pet**: Represents an animal owned by an owner. Key attributes include name, birth date, and type. A pet belongs to one owner and can have multiple visits.
+- **PetType**: Represents the category of a pet (e.g., Dog, Cat). Key attributes include name.
+- **Visit**: Represents a record of a pet's visit. Key attributes include date and description. A visit is associated with one pet.
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: Users can find owners by last name in under 3 seconds.
-- **SC-002**: New owners can be created successfully with all required fields in under 1 minute.
-- **SC-003**: Owner details are displayed completely and accurately within 2 seconds of navigation.
-- **SC-004**: 95% of users can successfully add a new pet to an owner's record on their first attempt.
-- **SC-005**: Validation errors for owner and pet creation/updates are displayed clearly and immediately upon form submission.
+- **SC-001**: Users can find owners by last name prefix in under 2 seconds.
+- **SC-002**: New owners can be successfully created and displayed in the owner list within 3 minutes of form submission.
+- **SC-003**: 95% of users can successfully add a new pet to an owner's record on their first attempt.
+- **SC-004**: Owner details, including all associated pets, are displayed within 1 second of navigating to the owner's detail page.
+- **SC-005**: The system successfully prevents the creation of owners or pets with blank required fields, providing clear validation messages to the user.
 
 ## Assumptions
 
 - Users have stable internet connectivity.
-- The application will be accessed via a web browser.
-- Standard date formats will be used for birth dates and visit dates.
-- The system will use a relational database for data persistence.
-- Existing authentication mechanisms (if any) will be leveraged for user access control, though this feature focuses on data management.
-- The primary language for the application is English.
+- The system will reuse existing validation logic for names, addresses, and cities.
+- The telephone number format validation (`\d{10}`) is sufficient for all regions.
+- Pet types are predefined and managed separately, and the system will present a selectable list of these types.
+- Error messages for validation failures will be user-friendly and displayed clearly.
+- The system will use standard date formatting for input and display.
+- The system will handle cases where an owner or pet ID does not exist by returning appropriate error messages or redirects.
+- The primary focus is on the core owner and pet management functionalities as described. Advanced features like pet history search or detailed visit reporting are out of scope for this initial specification.
