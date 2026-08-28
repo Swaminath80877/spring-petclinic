@@ -1,7 +1,7 @@
 {
   "integration": "speckit",
   "version": "1.0.1",
-  "installed_at": "2026-08-28T06:14:56.412327+00:00",
+  "installed_at": "2026-08-28T09:00:20.823999+00:00",
   "files": {
     ".specify/scripts/bash/resolve-template.sh": "829e227096abc8bf0889889ec9f792f503ca5d395b7836a8a7eb739ee75214e7",
     ".specify/scripts/bash/create-new-feature.sh": "fe99ea8da184380056ce8512ca5d37f67fb499ee4234835c15dcf7c4fb75451c",
