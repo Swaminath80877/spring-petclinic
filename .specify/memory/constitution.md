@@ -1,42 +1,34 @@
-# Spring Petclinic Constitution
+# Spring PetClinic Constitution
 
 ## Core Principles
 
 ### I. Layered Architecture Adherence
-Every component MUST reside within its designated architectural layer (Controller, Repository, Model, Configuration, Service, etc.). Cross-layer dependencies MUST be strictly unidirectional, flowing from higher layers to lower layers. Direct dependencies between unrelated layers are forbidden.
+Every component MUST reside within its designated architectural layer (Controller, Repository, Domain/Model, Configuration, Test). Components MUST NOT cross layer boundaries in unintended ways (e.g., a Controller directly calling a Repository).
 
-### II. Test Coverage Mandate
-All new features and bug fixes MUST be accompanied by comprehensive unit and integration tests. Unit tests MUST cover individual components in isolation, while integration tests MUST validate interactions between components and external systems (e.g., database, external APIs). A minimum of 80% code coverage for critical business logic is required.
+### II. Spring Boot Convention and Idioms
+The project MUST leverage Spring Boot features and conventions. This includes using Spring Data JPA for repositories, Spring MVC for controllers, and standard Spring Boot auto-configuration where applicable. Custom configurations MUST be clearly defined and documented.
 
-### III. Spring Boot Convention Over Configuration
-Leverage Spring Boot's auto-configuration capabilities wherever possible. Custom configurations SHOULD be minimal and clearly documented, adhering to Spring's idiomatic patterns. Avoid unnecessary boilerplate code.
+### III. Comprehensive Test Coverage (NON-NEGOTIABLE)
+All new features and bug fixes MUST be accompanied by unit and/or integration tests. Existing functionality MUST be covered by tests. Tests MUST verify business logic, controller behavior, and repository interactions. Integration tests MUST cover interactions between different layers and external dependencies (e.g., database).
 
-### IV. JPA Repository Best Practices
-JPA repositories MUST be used for data access. Custom query methods SHOULD be defined within the repository interfaces, leveraging Spring Data JPA's query derivation or `@Query` annotations. Avoid implementing complex data access logic directly in service or controller layers.
+### IV. Domain Model Integrity
+The domain model classes (e.g., `Owner`, `Pet`, `Vet`) MUST remain as pure Plain Old Java Objects (POJOs) with minimal dependencies, primarily focused on data representation and business logic. JPA annotations and validation constraints are acceptable within the domain model.
 
-### V. RESTful API Design
-Controllers MUST expose RESTful endpoints following standard HTTP methods (GET, POST, PUT, DELETE) and status codes. Request and response payloads SHOULD be in JSON format. Input validation MUST be performed at the controller or service layer.
-
-## Additional Constraints
-
-**Technology Stack**: The project MUST utilize Java, Spring Boot, Spring Data JPA, and Thymeleaf for templating. Database interactions are expected to be with a relational database (e.g., MySQL, PostgreSQL).
-
-**Containerization**: The project MUST support deployment via Docker, with a `Dockerfile` and Kubernetes manifests provided in the `k8s/` directory.
-
-**Development Environment**: The project MUST be compatible with the `.devcontainer/` configuration for consistent development environments.
+### V. Observability and Configuration
+Application behavior MUST be configurable through standard Spring Boot mechanisms (e.g., `application.properties`, environment variables). Logging MUST be used effectively to monitor application health and diagnose issues. Internationalization (i18n) MUST be handled via dedicated properties files and Spring's i18n support.
 
 ## Development Workflow
 
-**Branching Strategy**: Feature development MUST occur on dedicated feature branches. Pull Requests (PRs) MUST be created for merging into the main development branch.
+The development workflow for the Spring PetClinic project is guided by the following practices:
 
-**Code Reviews**: All PRs MUST undergo at least one senior developer review. Reviews MUST verify adherence to this constitution, code quality, test coverage, and architectural integrity.
-
-**Continuous Integration**: Automated builds and tests MUST be executed on every commit to the repository. Successful execution of all tests is a prerequisite for merging code.
-
-**Quality Gates**: Code merged into the main branch MUST pass all automated tests and code review checks. Any introduced regressions will require immediate remediation.
+*   **Feature Branching:** All development MUST occur on feature branches, branched from the main development branch.
+*   **Code Reviews:** All pull requests MUST undergo a thorough code review by at least one other team member. Reviews MUST verify adherence to the constitution, code quality, and test coverage.
+*   **Automated Testing:** CI pipelines MUST execute all unit and integration tests on every commit. Builds MUST fail if tests do not pass.
+*   **Incremental Development:** Features should be developed incrementally, with frequent commits and pull requests.
+*   **Database Integration:** Integration tests for database interactions MUST be clearly separated and configured to run against appropriate test databases (e.g., H2, PostgreSQL, MySQL).
 
 ## Governance
 
-This constitution supersedes all other development practices and guidelines for the Spring Petclinic repository. Amendments to this constitution require a formal proposal, documentation of the rationale, and approval by at least two-thirds of the core development team. Any approved amendments MUST include a migration plan for existing code to ensure compliance. All Pull Requests and code reviews MUST verify compliance with the principles and rules outlined herein.
+This constitution supersedes all other development practices for the Spring PetClinic project. Amendments to this constitution require a formal proposal, review by the core development team, and a documented migration plan if existing practices are affected. All pull requests and code reviews MUST verify compliance with the principles outlined herein. Complexity introduced into the codebase MUST be justified and documented.
 
 **Version**: 1.0.0 | **Ratified**: 2026-08-28 | **Last Amended**: 2026-08-28

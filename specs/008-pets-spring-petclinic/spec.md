@@ -10,127 +10,87 @@
 
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 - Create a new pet for an owner (Priority: P1)
+### User Story 1 - Create a New Pet (Priority: P1)
 
-As a clinic staff member, I want to be able to create a new pet for an existing owner so that I can record their details in the system.
+As a veterinarian or clinic staff member, I want to be able to add a new pet for an existing owner, so that I can maintain accurate records of all animals under our care.
 
-**Why this priority**: This is a core function for managing pet information and is essential for the system's primary purpose.
+**Why this priority**: This is a core functionality for managing pet clinic operations and is essential for basic record-keeping.
 
-**Independent Test**: Can be fully tested by selecting an owner, navigating to the pet creation form, entering valid pet details, and verifying the pet is listed under the owner. Delivers the ability to add new pets.
+**Independent Test**: Can be fully tested by navigating to an owner's profile, initiating the "Add Pet" action, filling in valid pet details, and verifying the pet appears in the owner's pet list.
 
 **Acceptance Scenarios**:
 
-1. **Given** an owner exists with ID 1, **When** a new pet is created with valid details (name: "Buddy", type: "hamster", birthDate: "1990-01-01"), **Then** the pet is saved and linked to the owner, and a success message "Pet details has been edited" is displayed.
-2. **Given** an owner exists, **When** a new pet is created with a valid name and type but no birth date, **Then** the system rejects the creation with a "required" error for the birth date field.
+1. **Given** an owner exists in the system, **When** I navigate to the owner's profile and select "Add Pet", **Then** I am presented with a form to enter pet details (name, type, birth date).
+2. **Given** I am on the "Add Pet" form for an owner, **When** I enter a valid pet name, select a pet type from the available options, and enter a valid birth date, **Then** the pet is successfully created and associated with the owner, and the owner's pet list is updated.
 
 ---
 
-### User Story 2 - Update an existing pet's details (Priority: P1)
+### User Story 2 - Update an Existing Pet's Details (Priority: P1)
 
-As a clinic staff member, I want to be able to update an existing pet's details so that I can correct or modify their information.
+As a veterinarian or clinic staff member, I want to be able to update the details of an existing pet, so that I can correct any errors or reflect changes in the pet's information.
 
-**Why this priority**: Maintaining accurate pet information is crucial for effective clinic operations.
+**Why this priority**: Maintaining accurate and up-to-date pet information is crucial for effective patient care and record-keeping.
 
-**Independent Test**: Can be fully tested by selecting an owner, choosing an existing pet, modifying its details, saving the changes, and verifying the updated information is displayed. Delivers the ability to correct pet information.
+**Independent Test**: Can be fully tested by selecting an existing pet from an owner's profile, modifying its details (name, type, birth date), saving the changes, and verifying the updated information is displayed.
 
 **Acceptance Scenarios**:
 
-1. **Given** an owner exists with ID 1 and a pet with ID 1 named "petty", **When** the pet's details are updated (e.g., name changed to "Buddy", birthDate to "1990-01-01"), **Then** the pet's details are updated in the system, and the user is redirected to the owner's details page with a success message "Pet details has been edited".
-2. **Given** an owner exists with ID 1 and a pet named "Buddy", **When** an attempt is made to update this pet's name to "Buddy" (a duplicate name for the same owner), **Then** the system rejects the update with a "duplicate" error for the "name" field.
+1. **Given** an owner has an existing pet, **When** I navigate to the pet's details and select "Edit", **Then** I am presented with a form pre-filled with the pet's current information.
+2. **Given** I am on the "Edit Pet" form, **When** I modify the pet's name, type, or birth date and save the changes, **Then** the pet's details are successfully updated and persisted.
 
 ---
 
-### User Story 3 - Prevent creation of a pet with a duplicate name for the same owner (Priority: P2)
+### User Story 3 - Prevent Duplicate Pet Names for the Same Owner (Priority: P2)
 
-As a clinic staff member, I want the system to prevent me from creating a pet with a name that already exists for the same owner, so that pet names remain unique within an owner's record.
+As a veterinarian or clinic staff member, I want the system to prevent me from creating a pet with a name that already exists for the same owner, to avoid confusion and maintain data integrity.
 
-**Why this priority**: Ensures data integrity and avoids confusion when managing multiple pets for a single owner.
+**Why this priority**: Duplicate pet names for the same owner can lead to significant confusion in record-keeping and communication.
 
-**Independent Test**: Can be fully tested by creating a pet with a specific name for an owner, then attempting to create another pet for the same owner with the identical name. Delivers a safeguard against duplicate pet names.
-
-**Acceptance Scenarios**:
-
-1. **Given** an owner exists with ID 1 and already has a pet named "petty", **When** an attempt is made to create a new pet with the name "petty", **Then** the system rejects the creation, indicating a "duplicate" error for the "name" field, and the form remains on the "createOrUpdatePetForm" view.
-
----
-
-### User Story 4 - Select pet type from a predefined list (Priority: P2)
-
-As a clinic staff member, I want to be able to select the pet's type from a predefined list (e.g., cat, dog, hamster) when creating or updating a pet, so that I can ensure consistency and accuracy in pet categorization.
-
-**Why this priority**: Standardizes pet types, improving data quality and enabling better reporting and filtering.
-
-**Independent Test**: Can be fully tested by initiating pet creation/update and verifying a dropdown or selection mechanism displays available pet types, and that selecting one correctly populates the pet's type. Delivers standardized pet type selection.
+**Independent Test**: Can be fully tested by attempting to create a new pet for an owner who already has a pet with a specific name, using that same name for the new pet, and verifying that a validation error is displayed and the pet is not created.
 
 **Acceptance Scenarios**:
 
-1. **Given** the pet creation form is open, **When** the user views the "Pet Type" field, **Then** a list of available pet types (e.g., "cat", "dog", "hamster") is presented for selection.
-2. **Given** the user selects "dog" from the pet type list, **When** the pet is saved, **Then** the pet's type is recorded as "dog".
-
----
-
-### User Story 5 - Add a visit for a pet (Priority: P3)
-
-As a clinic staff member, I want to be able to add a visit record for a specific pet, including a description and date, so that I can track their medical history.
-
-**Why this priority**: Essential for maintaining a complete medical history for each pet.
-
-**Independent Test**: Can be fully tested by selecting a pet, navigating to the visit creation form, entering a valid description and date, and verifying the visit is recorded for that pet. Delivers the ability to log pet visits.
-
-**Acceptance Scenarios**:
-
-1. **Given** a pet exists, **When** a new visit is added with description "Annual check-up" and date "2026-09-15", **Then** the visit is successfully recorded and associated with the pet.
-2. **Given** a pet exists, **When** an attempt is made to add a visit with an invalid date (e.g., in the past), **Then** the system rejects the creation with a "typeMismatch.visitDate" error.
+1. **Given** an owner has a pet named "Buddy", **When** I attempt to create a new pet for the same owner and enter "Buddy" as the name, **Then** a validation error is displayed indicating that the pet name must be unique for this owner, and the pet is not created.
 
 ---
 
 ### Edge Cases
 
-- **Duplicate Pet Name**: Attempting to create or update a pet with a name that already exists for the same owner → system rejects with a "duplicate" error.
-- **Missing Pet Name**: Attempting to create or update a pet without providing a name → system rejects with a "required" error.
-- **Missing Pet Type**: Attempting to create a new pet without specifying its type → system rejects with a "required" error.
-- **Missing Pet Birth Date**: Attempting to create or update a pet without providing a birth date → system rejects with a "required" error.
-- **Future Birth Date**: Attempting to create or update a pet with a birth date in the future → system rejects with a "typeMismatch.birthDate" error.
-- **Invalid Visit Date**: Attempting to book a visit with a date that is not in the future (i.e., today or in the past) → system rejects with a "typeMismatch.visitDate" error.
-- **Non-existent Owner**: Attempting to create or update a pet or visit for an owner ID that does not exist → system throws an `IllegalArgumentException` indicating the owner was not found.
-- **Data Integrity Violation (Duplicate Pet Name)**: Attempting to save a pet with a name that is a case-insensitive duplicate of an existing pet's name for the same owner → system throws a `DataIntegrityViolationException`.
+- **Missing Pet Name**: Pet creation/update form submitted with an empty name → system rejects with "required" error.
+- **Missing Pet Type**: Pet creation form submitted without selecting a pet type → system rejects with "required" error.
+- **Missing Birth Date**: Pet creation/update form submitted with an empty birth date → system rejects with "required" error.
+- **Future Birth Date**: Pet creation/update form submitted with a birth date in the future → system rejects with "typeMismatch.birthDate" error.
+- **Duplicate Pet Name for Same Owner**: Attempting to create or update a pet with a name that already exists for the same owner → system rejects with "duplicate" error.
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: System MUST allow the creation of a new pet for an existing owner.
-- **FR-002**: System MUST validate pet name, type, and birth date during creation or update.
-- **FR-003**: System SHOULD allow updating an existing pet's details.
-- **FR-004**: System SHOULD display a form for creating or updating pet information.
-- **FR-005**: System SHOULD provide a list of available pet types for selection during pet creation.
-- **FR-006**: System MUST allow adding a visit record for a pet, including a description and date.
-- **FR-007**: System MUST validate the visit date to ensure it is in the future.
-- **FR-008**: System MUST prevent the creation of a pet with a name that is a duplicate of an existing pet's name for the same owner.
-- **FR-009**: System MUST reject pet creation/update if the owner ID does not exist.
+- **FR-001**: System MUST allow the creation of a new pet for an owner.
+- **FR-002**: System MUST validate that a pet's name is provided and is not blank.
+- **FR-003**: System SHOULD validate that a pet's type is provided for new pets.
+- **FR-004**: System SHOULD validate that a pet's birth date is provided.
+- **FR-005**: System MUST allow updating an existing pet's information, including its name, type, and birth date.
+- **FR-006**: System MUST prevent the creation or update of a pet with a name that already exists for the same owner.
 
 ### Key Entities *(include if feature involves data)*
 
-- **Pet**: Represents a pet belonging to an owner. Key attributes include name, birth date, and type. It is associated with an owner and can have multiple visits.
-- **PetType**: Represents the category of a pet (e.g., dog, cat, hamster). It has a name and can be associated with multiple pets.
-- **Visit**: Represents a record of a pet's visit to the clinic. Key attributes include description and date. It is associated with a specific pet.
+- **Pet**: Represents an animal owned by a person. Attributes include: name (String), type (PetType), birthDate (LocalDate). It has a relationship with Owner and can have multiple Visits.
+- **PetType**: Represents the category of a pet (e.g., Cat, Dog, Hamster). Attributes include: name (String).
+- **Owner**: Represents the owner of pets. Attributes include: firstName, lastName, address, city, telephone, pets (Set<Pet>).
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: Users can successfully create a new pet for an owner in under 1 minute.
-- **SC-002**: Updating an existing pet's details takes less than 45 seconds.
-- **SC-003**: 99% of pet creation/update attempts with valid data succeed.
-- **SC-004**: The system prevents duplicate pet names for the same owner with a clear error message.
-- **SC-005**: All pet visits are recorded accurately with correct descriptions and dates.
-- **SC-006**: The system handles invalid input for pet name, type, and birth date gracefully, providing informative error messages.
+- **SC-001**: 100% of new pet creations and updates are successful when valid data is provided.
+- **SC-002**: Validation errors for missing pet name, type, or birth date are displayed to the user within 1 second of form submission.
+- **SC-003**: Attempts to create a pet with a duplicate name for the same owner are rejected with an error message within 1 second.
+- **SC-004**: The system correctly associates newly created pets with their respective owners.
 
 ## Assumptions
 
-- Users interacting with the pet management system are clinic staff with appropriate permissions.
-- A mechanism for selecting existing owners exists and is functional.
-- The list of available pet types is managed elsewhere and will be provided to this feature.
-- Dates are handled in the `YYYY-MM-DD` format.
-- The system will leverage existing Spring Boot conventions for error handling and validation messages.
-- The `Owner` entity is already defined and accessible.
+- Users interacting with this feature are authenticated clinic staff or veterinarians.
+- The list of available pet types is predefined and managed separately.
+- The system has a mechanism for associating pets with existing owners.
+- Birth dates are expected in a standard `YYYY-MM-DD` format.
