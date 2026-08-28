@@ -1,5 +1,42 @@
-{
-  "status": "error",
-  "message": "429 Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.",
-  "traceback": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.12/site-packages/google/api_core/grpc_helpers.py\", line 75, in error_remapped_callable\n    return callable_(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/grpc/_channel.py\", line 1168, in __call__\n    return _end_unary_response_blocking(state, call, False, None)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/grpc/_channel.py\", line 999, in _end_unary_response_blocking\n    raise _InactiveRpcError(state)  # pytype: disable=not-instantiable\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ngrpc._channel._InactiveRpcError: <_InactiveRpcError of RPC that terminated with:\n\tstatus = StatusCode.RESOURCE_EXHAUSTED\n\tdetails = \"Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.\"\n\tdebug_error_string = \"RESOURCE_EXHAUSTED:Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.\"\n>\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/app/mcp_server.py\", line 1246, in generate_constitution\n    output_path = agent.generate(owner, repo)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/agents/constitution_agent.py\", line 214, in generate\n    constitution_md = llm.generate(prompt)\n                      ^^^^^^^^^^^^^^^^^^^^\n  File \"/app/llm/gemini_client.py\", line 40, in generate\n    response = self.model.generate_content(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/vertexai/generative_models/_generative_models.py\", line 654, in generate_content\n    return self._generate_content(\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/vertexai/generative_models/_generative_models.py\", line 779, in _generate_content\n    gapic_response = self._prediction_client.generate_content(request=request)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/google/cloud/aiplatform_v1/services/prediction_service/client.py\", line 2159, in generate_content\n    response = rpc(\n               ^^^^\n  File \"/usr/local/lib/python3.12/site-packages/google/api_core/gapic_v1/method.py\", line 131, in __call__\n    return wrapped_func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/google/api_core/grpc_helpers.py\", line 77, in error_remapped_callable\n    raise exceptions.from_grpc_error(exc) from exc\ngoogle.api_core.exceptions.ResourceExhausted: 429 Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.\n"
-}
+# Spring Petclinic Constitution
+
+## Core Principles
+
+### I. Layered Architecture Adherence
+Every component MUST reside within its designated architectural layer (Controller, Repository, Model, Configuration, Service, etc.). Cross-layer dependencies MUST be strictly unidirectional, flowing from higher layers to lower layers. Direct dependencies between unrelated layers are forbidden.
+
+### II. Test Coverage Mandate
+All new features and bug fixes MUST be accompanied by comprehensive unit and integration tests. Unit tests MUST cover individual components in isolation, while integration tests MUST validate interactions between components and external systems (e.g., database, external APIs). A minimum of 80% code coverage for critical business logic is required.
+
+### III. Spring Boot Convention Over Configuration
+Leverage Spring Boot's auto-configuration capabilities wherever possible. Custom configurations SHOULD be minimal and clearly documented, adhering to Spring's idiomatic patterns. Avoid unnecessary boilerplate code.
+
+### IV. JPA Repository Best Practices
+JPA repositories MUST be used for data access. Custom query methods SHOULD be defined within the repository interfaces, leveraging Spring Data JPA's query derivation or `@Query` annotations. Avoid implementing complex data access logic directly in service or controller layers.
+
+### V. RESTful API Design
+Controllers MUST expose RESTful endpoints following standard HTTP methods (GET, POST, PUT, DELETE) and status codes. Request and response payloads SHOULD be in JSON format. Input validation MUST be performed at the controller or service layer.
+
+## Additional Constraints
+
+**Technology Stack**: The project MUST utilize Java, Spring Boot, Spring Data JPA, and Thymeleaf for templating. Database interactions are expected to be with a relational database (e.g., MySQL, PostgreSQL).
+
+**Containerization**: The project MUST support deployment via Docker, with a `Dockerfile` and Kubernetes manifests provided in the `k8s/` directory.
+
+**Development Environment**: The project MUST be compatible with the `.devcontainer/` configuration for consistent development environments.
+
+## Development Workflow
+
+**Branching Strategy**: Feature development MUST occur on dedicated feature branches. Pull Requests (PRs) MUST be created for merging into the main development branch.
+
+**Code Reviews**: All PRs MUST undergo at least one senior developer review. Reviews MUST verify adherence to this constitution, code quality, test coverage, and architectural integrity.
+
+**Continuous Integration**: Automated builds and tests MUST be executed on every commit to the repository. Successful execution of all tests is a prerequisite for merging code.
+
+**Quality Gates**: Code merged into the main branch MUST pass all automated tests and code review checks. Any introduced regressions will require immediate remediation.
+
+## Governance
+
+This constitution supersedes all other development practices and guidelines for the Spring Petclinic repository. Amendments to this constitution require a formal proposal, documentation of the rationale, and approval by at least two-thirds of the core development team. Any approved amendments MUST include a migration plan for existing code to ensure compliance. All Pull Requests and code reviews MUST verify compliance with the principles and rules outlined herein.
+
+**Version**: 1.0.0 | **Ratified**: 2026-08-28 | **Last Amended**: 2026-08-28

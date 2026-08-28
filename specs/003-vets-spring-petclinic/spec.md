@@ -1,4 +1,4 @@
-# Feature Specification: Vets for Spring Petclinic
+# Feature Specification: vets for spring-petclinic
 
 **Feature Branch**: `003-vets-spring-petclinic`
 
@@ -10,53 +10,53 @@
 
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 - View Vet List (Priority: P1)
+### User Story 1 - View the list of all veterinarians (Priority: P1)
 
-As a clinic administrator, I want to see a list of all veterinarians so that I can quickly find contact information or assign tasks.
+As a user, I want to see a list of all veterinarians so that I can understand the available veterinary staff.
 
-**Why this priority**: This is a core function for managing clinic staff and is essential for basic operations.
+**Why this priority**: This is a core feature for users to discover veterinary services.
 
-**Independent Test**: Can be fully tested by navigating to the vets page and verifying that a list of vets is displayed.
+**Independent Test**: Can be fully tested by navigating to the vets page and verifying that a list of veterinarians is displayed.
 
 **Acceptance Scenarios**:
 
-1. **Given** the vets module is accessible, **When** a user navigates to the vets page, **Then** a list of all veterinarians is displayed.
+1. **Given** the system has veterinarians registered, **When** a user navigates to the vets page, **Then** the list of all veterinarians is displayed.
 
 ---
 
-### User Story 2 - View Vet Details (Priority: P2)
+### User Story 2 - View veterinarian details including specialties (Priority: P2)
 
-As a clinic administrator or a pet owner, I want to view the details of a specific veterinarian, including their specialties, so that I can understand their expertise.
+As a user, I want to view a veterinarian's profile, including their specialties, so that I can understand their expertise.
 
-**Why this priority**: Provides detailed information about individual vets, which is important for matching pets with appropriate specialists.
+**Why this priority**: Provides detailed information about a vet's qualifications.
 
-**Independent Test**: Can be fully tested by selecting a vet from the list and verifying their name and specialties are displayed.
+**Independent Test**: Can be fully tested by selecting a veterinarian from the list and verifying their name and specialties are shown.
 
 **Acceptance Scenarios**:
 
-1. **Given** a specific vet exists, **When** a user views the vet's profile, **Then** their first name, last name, and specialties are displayed.
+1. **Given** a veterinarian with specialties exists, **When** a user views the veterinarian's profile, **Then** their name and all associated specialties are displayed.
 
 ---
 
-### User Story 3 - Vet Serialization and Deserialization (Priority: P3)
+### User Story 3 - View paginated list of veterinarians (Priority: P3)
 
-As a system component, I need to be able to serialize and deserialize Vet objects so that data can be stored, transmitted, and retrieved accurately.
+As a user, when there are many veterinarians, I want to see them in a paginated list so that the page loads quickly and is easy to navigate.
 
-**Why this priority**: Ensures data integrity when vet information is processed by different parts of the system or stored.
+**Why this priority**: Ensures a good user experience even with a large number of veterinarians.
 
-**Independent Test**: Can be tested by creating a Vet object, serializing it, then deserializing it and comparing the original and deserialized objects.
+**Independent Test**: Can be fully tested by navigating to the vets page when there are more than one page of veterinarians and verifying pagination controls are present and functional.
 
 **Acceptance Scenarios**:
 
-1. **Given** a Vet object is created with a first name, last name, and ID, **When** it is serialized and deserialized, **Then** the deserialized object retains the original vet's first name, last name, and ID.
+1. **Given** there are more than one page of veterinarians, **When** a user navigates to the vets page, **Then** the first page of veterinarians is displayed with pagination controls.
 
 ---
 
 ### Edge Cases
 
-- What happens when a vet has no specialties? The system should display an indication that they have no specialties.
-- How does the system handle a blank first or last name for a vet? The system should reject the input with a validation error.
-- How does the system handle duplicate specialties for a single vet? The system should prevent duplicate specialties from being added.
+- What happens when a veterinarian has no specialties? The system should display that they have no specialties listed.
+- How does system handle a blank or empty veterinarian name? The system should reject such entries with a validation error.
+- How does system handle a blank or empty specialty name? The system should reject such entries with a validation error.
 
 ## Requirements *(mandatory)*
 
@@ -65,26 +65,26 @@ As a system component, I need to be able to serialize and deserialize Vet object
 - **FR-001**: System MUST display a paginated list of all registered veterinarians on the `/vets.html` endpoint.
 - **FR-002**: System MUST show each vet's specialities on their profile.
 - **FR-003**: System SHOULD cache vet list results to reduce database load.
-- **FR-004**: System SHOULD allow switching languages using a URL parameter like `?lang=es`.
-- **FR-005**: System SHOULD enable statistics for the "vets" cache, accessible via JMX.
+- **FR-004**: System SHOULD enable statistics for the 'vets' cache.
+- **FR-005**: System MUST retrieve all veterinarians from the data store when `findAll()` is called on `VetRepository`.
 
 ### Key Entities *(include if feature involves data)*
 
-- **Vet**: Represents a veterinarian. Key attributes include first name, last name, and a list of specialties.
-- **Specialty**: Represents a specialization for a veterinarian. Key attributes include the name of the specialty.
+- **Vet**: Represents a veterinarian. Key attributes include first name, last name, and a collection of specialties.
+- **Specialty**: Represents a veterinarian's area of expertise. Key attributes include the name of the specialty.
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: The list of veterinarians is displayed on the `/vets.html` page within 2 seconds for a list of up to 100 vets.
-- **SC-002**: Vet details, including specialties, are displayed within 1 second of selecting a vet.
-- **SC-003**: The vet list cache reduces database load by at least 30% during peak hours.
-- **SC-004**: 95% of users can successfully view vet information without encountering errors.
+- **SC-001**: Users can view the list of all veterinarians within 2 seconds.
+- **SC-002**: Veterinarian details, including specialties, are displayed within 1 second of selection.
+- **SC-003**: The system supports displaying up to 100 veterinarians per page without performance degradation.
+- **SC-004**: Cache hit rate for vet list results is above 70% after initial load.
 
 ## Assumptions
 
-- Users accessing the vets page have basic web browsing capabilities.
-- The underlying database is available and functional.
-- The system has a mechanism for managing internationalization (i18n) for language switching.
-- JMX is enabled and accessible for monitoring cache statistics.
+- Users have stable internet connectivity.
+- The `spring-petclinic` application is already set up and running.
+- The database contains existing veterinarian data.
+- The `Vet` and `Specialty` entities are correctly mapped in the persistence layer.
