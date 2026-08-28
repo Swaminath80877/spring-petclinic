@@ -3,31 +3,32 @@
 ## Core Principles
 
 ### I. Layered Architecture Adherence
-Every component MUST reside within its designated architectural layer (Controller, Repository, Domain/Model, Configuration, Test). Cross-layer dependencies MUST be strictly unidirectional, flowing from higher layers to lower layers. Direct dependencies between non-adjacent layers are prohibited.
+Every component MUST reside within its designated architectural layer (Controller, Repository, Domain/Model, Configuration, Test). Cross-layer dependencies MUST strictly follow the defined hierarchy (e.g., Controllers depend on Services, Services depend on Repositories). Direct dependencies between unrelated layers are prohibited.
 
-### II. Spring Boot Convention Over Configuration
-Leverage Spring Boot's auto-configuration capabilities wherever possible. Custom configurations (e.g., `CacheConfiguration.java`, `WebConfiguration.java`) MUST be minimal, well-documented, and justified by specific project requirements beyond standard Spring Boot defaults.
+### II. Spring Boot Convention and Best Practices
+The project MUST leverage Spring Boot's auto-configuration and conventions. Configuration MUST be managed via `@Configuration` classes and Spring Boot properties. Dependency Injection MUST be used extensively via `@Autowired` and constructor injection.
 
 ### III. Comprehensive Test Coverage (NON-NEGOTIABLE)
-All new features and bug fixes MUST be accompanied by unit and integration tests. Unit tests MUST cover individual components (controllers, services, repositories, models) in isolation. Integration tests (e.g., `MySqlIntegrationTests.java`, `PostgresIntegrationTests.java`, `CrashControllerIntegrationTests.java`) MUST validate interactions between components and with external systems (like databases). Test coverage metrics MUST be tracked and maintained.
+All new features and bug fixes MUST be accompanied by unit and integration tests. Unit tests MUST focus on individual components, while integration tests MUST verify interactions between layers and external systems (e.g., database). Test coverage MUST be maintained at a high level, with specific targets defined in the Quality Gates section.
 
-### IV. Domain Model Integrity
-The domain model classes (e.g., `Owner.java`, `Pet.java`, `Vet.java`, `Visit.java`) MUST remain pure Plain Old Java Objects (POJOs) or Jakarta Persistence entities, free from business logic that belongs in service layers. Validation logic MUST be implemented using Jakarta Bean Validation annotations and associated validators (e.g., `PetValidator.java`).
+### IV. JPA and Data Access Standards
+Data access MUST be implemented using Spring Data JPA repositories. Entities MUST be annotated with Jakarta Persistence annotations. All database interactions MUST be performed through these repositories, ensuring consistency and testability.
 
-### V. Observability and Debuggability
-All controllers and services MUST be designed with observability in mind. This includes clear logging of key operations and potential error conditions. The use of Spring Boot Actuator is encouraged for production monitoring.
+### V. RESTful API Design
+Controllers MUST expose RESTful endpoints following standard HTTP methods and status codes. Request and response payloads SHOULD be designed for clarity and efficiency, leveraging JSON as the primary format.
 
 ## Development Workflow
 
-The standard development workflow follows these steps:
-1.  **Feature Branching**: Create a new branch for each feature or bug fix.
-2.  **Development**: Implement the feature, adhering to the core principles. Write unit and integration tests concurrently.
-3.  **Code Review**: Submit a Pull Request (PR) for review. All PRs MUST pass automated checks (linting, compilation, all tests). Reviewers MUST verify adherence to architectural principles and coding standards.
-4.  **Testing**: Ensure all tests pass locally and in the CI pipeline.
-5.  **Merge**: Once approved and all checks pass, merge the PR into the main branch.
+### Code Review and Quality Gates
+All code changes MUST undergo a mandatory code review process. Pull requests will only be merged after approval from at least one other team member. Automated checks, including static analysis and test execution, MUST pass before merging. Specific quality gates include:
+*   Minimum 80% unit test coverage.
+*   All integration tests passing.
+*   No critical or major static analysis warnings.
+
+### Versioning and Breaking Changes
+The project will follow Semantic Versioning (MAJOR.MINOR.PATCH). Breaking changes MUST be clearly documented and require a MAJOR version increment. Any breaking change MUST include a migration plan if applicable.
 
 ## Governance
-
-This constitution supersedes all other development practices for the Spring Petclinic repository. Amendments to this constitution require a formal proposal, a clear justification, and approval by a majority of core maintainers. Any approved amendment MUST include a migration plan for existing code to ensure compliance. All Pull Requests and code reviews MUST verify compliance with this constitution.
+This constitution supersedes all other development practices for the Spring Petclinic repository. Amendments to this constitution require a formal proposal, documentation of the rationale, and approval by a majority of the core development team. All pull requests and code reviews MUST verify compliance with these principles.
 
 **Version**: 1.0.0 | **Ratified**: 2026-08-28 | **Last Amended**: 2026-08-28
