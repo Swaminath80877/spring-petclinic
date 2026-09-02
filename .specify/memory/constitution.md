@@ -1,39 +1,5 @@
-# Spring PetClinic Constitution
-
-## Core Principles
-
-### I. Layered Architecture Adherence
-Every component MUST reside within its designated architectural layer (Controller, Repository, Domain/Model, Configuration, Test). Cross-layer dependencies MUST be strictly unidirectional, flowing downwards (e.g., Controllers depend on Services, Services depend on Repositories).
-
-### II. Spring Boot Convention Over Configuration
-Leverage Spring Boot's auto-configuration capabilities. Custom configurations (e.g., `CacheConfiguration`, `WebConfiguration`) MUST be minimal and clearly justified, adhering to established Spring Boot patterns.
-
-### III. Comprehensive Test Coverage (NON-NEGOTIABLE)
-All new features and bug fixes MUST be accompanied by unit and integration tests. Unit tests MUST cover individual components (controllers, services, models), while integration tests MUST validate interactions between layers and with external systems (e.g., database, external APIs). Test coverage MUST be tracked and maintained.
-
-### IV. Domain-Driven Design Principles
-The core domain entities (`Owner`, `Pet`, `Vet`, `Visit`, `PetType`, `Specialty`) MUST be the central focus. Business logic resides within the domain or service layers, not directly in controllers or repositories. Entities MUST be POJOs with appropriate JPA annotations for persistence.
-
-### V. Observability and Debuggability
-Application behavior MUST be observable through structured logging and clear exception handling. The `CrashController` serves as an example of handling unexpected errors. Internationalization (`I18nPropertiesSyncTest`) is a key aspect of user-facing observability.
-
-## Development Workflow
-
-The typical development workflow for the Spring PetClinic project is as follows:
-
-1.  **Feature/Bug Identification**: A new feature request or bug is identified.
-2.  **Design & Planning**: The impact on the existing architecture and layers is assessed. Any proposed changes to core principles or established patterns must be documented and approved.
-3.  **Development**:
-    *   Write comprehensive unit tests for new or modified components.
-    *   Implement the feature or fix the bug, ensuring adherence to layered architecture and domain-driven principles.
-    *   Write integration tests to verify interactions and end-to-end functionality.
-    *   Ensure all new code is properly internationalized where applicable.
-4.  **Code Review**: All code changes MUST undergo a thorough code review by at least one other team member. Reviews MUST verify adherence to this constitution, architectural integrity, test coverage, and code quality.
-5.  **Testing**: Automated tests (unit and integration) MUST pass in the CI/CD pipeline. Manual testing may be performed as needed.
-6.  **Deployment**: Approved changes are deployed to staging and production environments.
-
-## Governance
-
-This constitution supersedes all other development practices for the Spring PetClinic project. Amendments to this constitution require a formal proposal, documentation of the rationale, and approval by a majority of the core development team. Any approved amendments MUST include a migration plan for existing code to ensure compliance. All Pull Requests and code reviews MUST verify compliance with this constitution. Complexity MUST always be justified with clear documentation.
-
-**Version**: 1.0.0 | **Ratified**: 2026-09-02 | **Last Amended**: 2026-09-02
+{
+  "status": "error",
+  "message": "Bedrock HTTP 400: {\"message\":\"Error 002: Access to Bedrock models is not allowed for this account\"}",
+  "traceback": "Traceback (most recent call last):\n  File \"/app/mcp_server.py\", line 1317, in generate_constitution\n    output_path = agent.generate(owner, repo)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/agents/constitution_agent.py\", line 214, in generate\n    constitution_md = llm.generate(prompt)\n                      ^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/tenacity/__init__.py\", line 331, in wrapped_f\n    return copy(f, *args, **kw)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/tenacity/__init__.py\", line 470, in __call__\n    do = self.iter(retry_state=retry_state)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/tenacity/__init__.py\", line 371, in iter\n    result = action(retry_state)\n             ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/tenacity/__init__.py\", line 393, in <lambda>\n    self._add_action_func(lambda rs: rs.outcome.result())\n                                     ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/concurrent/futures/_base.py\", line 449, in result\n    return self.__get_result()\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/concurrent/futures/_base.py\", line 401, in __get_result\n    raise self._exception\n  File \"/usr/local/lib/python3.12/site-packages/tenacity/__init__.py\", line 473, in __call__\n    result = fn(*args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^\n  File \"/app/llm/bedrock_client.py\", line 249, in generate\n    raise RuntimeError(\nRuntimeError: Bedrock HTTP 400: {\"message\":\"Error 002: Access to Bedrock models is not allowed for this account\"}\n"
+}
