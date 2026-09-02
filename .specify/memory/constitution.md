@@ -3,38 +3,38 @@
 ## Core Principles
 
 ### I. Layered Architecture Adherence
-Every component MUST reside within its designated architectural layer (Controller, Repository, Configuration, Domain/Model). Cross-layer dependencies MUST be strictly unidirectional, flowing from Controller down to Repository and Domain.
+Every component MUST reside within its designated architectural layer (Controller, Repository, Model, Configuration, Service, Test). Cross-layer dependencies MUST follow a strict top-down flow (e.g., Controllers depend on Services, Services depend on Repositories). Direct dependencies between non-adjacent layers are prohibited.
 
-### II. Test-Driven Development (TDD) for New Features
-All new features and significant modifications MUST be developed following a TDD approach. Tests MUST be written and pass before the corresponding production code is committed. Unit tests MUST cover individual components, and integration tests MUST validate interactions between layers and external systems.
+### II. Spring Boot Convention Compliance
+The project MUST leverage Spring Boot's auto-configuration and idiomatic patterns. Configuration MUST be managed via `application.properties` or `@Configuration` classes. Dependency injection MUST be achieved using Spring's annotations (`@Autowired`, `@Component`, etc.).
 
-### III. Spring Boot Convention Over Configuration
-Leverage Spring Boot's auto-configuration capabilities wherever possible. Custom configurations (e.g., `CacheConfiguration.java`, `WebConfiguration.java`) MUST be clearly documented and justified. Avoid unnecessary boilerplate code.
+### III. Test-Driven Development (TDD) and Comprehensive Testing
+All new features and bug fixes MUST be developed following a TDD approach. Unit tests MUST cover individual components, integration tests MUST validate interactions between components and external systems (like databases), and end-to-end tests MUST verify user flows. All tests MUST pass before code is merged.
 
-### IV. Data Access Layer Abstraction
-The Repository layer MUST abstract all data access logic. Controllers and Services MUST interact solely with repository interfaces, not directly with underlying data sources or ORM specifics.
+### IV. Data Persistence Abstraction
+Data access MUST be abstracted through Spring Data JPA repositories. Direct SQL queries within business logic are prohibited. All repository interfaces MUST extend `JpaRepository` or a similar Spring Data interface.
 
 ### V. Observability and Logging
-All components MUST implement appropriate logging. Critical operations, errors, and significant state changes MUST be logged with sufficient detail to facilitate debugging and monitoring. Structured logging is preferred.
+Application behavior and potential issues MUST be observable through structured logging. All significant events, errors, and state changes MUST be logged using a consistent format. The `Logback` framework, as provided by Spring Boot, MUST be used for logging.
 
 ## Additional Constraints
 
-**Technology Stack**: The project MUST utilize Java, Spring Boot, Spring Data JPA, and Thymeleaf for templating. Dependencies MUST be managed via Maven.
+**Technology Stack**: The project MUST be built using Java and Spring Boot. Dependencies MUST be managed via Maven. The primary database technology is relational (e.g., MySQL, PostgreSQL, H2 for testing).
 
-**Database Agnosticism**: While integration tests may target specific databases (e.g., `MySqlIntegrationTests.java`, `PostgresIntegrationTests.java`), the core application logic MUST remain agnostic to the underlying database technology.
+**Security**: Input validation MUST be performed at the controller layer to prevent common web vulnerabilities. Sensitive data MUST NOT be logged or stored in plain text.
 
-**Internationalization (i18n)**: All user-facing strings MUST be internationalized and managed through properties files. The `I18nPropertiesSyncTest.java` MUST pass to ensure comprehensive translation coverage.
+**Internationalization (i18n)**: All user-facing strings MUST be internationalized using Spring's message source mechanism. The `I18nPropertiesSyncTest` MUST pass, ensuring all strings are translated across all supported locales.
 
 ## Development Workflow
 
-**Code Reviews**: All pull requests MUST undergo a thorough code review by at least one other team member. Reviews MUST verify adherence to architectural principles, coding standards, and test coverage.
+**Branching Strategy**: A Gitflow-like branching strategy is encouraged, with `main` for production-ready code, `develop` for integration, and feature branches for new development.
 
-**Branching Strategy**: A Gitflow-like branching strategy is recommended, with `main` for production-ready code, `develop` for integration, and feature branches for new development.
+**Code Reviews**: All Pull Requests (PRs) MUST undergo at least one thorough code review by a team member. Reviews MUST verify adherence to the constitution, code quality, and test coverage.
 
-**Continuous Integration**: Automated builds and tests MUST be executed on every commit to feature branches and on every merge to `develop`.
+**Quality Gates**: Automated checks, including static analysis (e.g., SonarQube integration if applicable), unit tests, and integration tests, MUST pass before a PR can be merged.
 
 ## Governance
 
-This Constitution supersedes all other development practices for the Spring Petclinic repository. Amendments to this Constitution require a formal proposal, documentation of the rationale, and approval by a majority of core maintainers. Any approved amendments MUST include a plan for migrating existing code to comply with the new rules. All pull requests and code reviews MUST verify compliance with this Constitution.
+This Constitution supersedes all other development practices for the Spring Petclinic repository. Amendments to this Constitution require a formal proposal, documented justification, and approval by a majority of the core development team. Any approved amendments MUST include a plan for migrating existing code and practices to comply with the changes. All Pull Requests and code reviews MUST verify compliance with this Constitution. Complexity and deviation from these principles MUST be explicitly justified and documented.
 
-**Version**: 1.0.0 | **Ratified**: 2026-08-31 | **Last Amended**: 2026-08-31
+**Version**: 1.0.0 | **Ratified**: 2026-09-02 | **Last Amended**: 2026-09-02
