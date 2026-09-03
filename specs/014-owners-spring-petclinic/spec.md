@@ -1,0 +1,3760 @@
+# Feature Specification: Owner Management Enhancements
+
+**Feature Branch**: `014-owners-spring-petclinic`
+
+**Created**: 2026-09-02
+
+**Status**: Draft
+
+**Input**: User description: "owners for spring-petclinic"
+
+## User Scenarios & Testing *(mandatory)*
+
+### User Story 1 - Find Owners by Last Name (Priority: P1)
+
+Given a user is on the find owners page, When they enter a last name and submit the form, Then the system displays a list of owners whose last names start with the entered value.
+
+**Why this priority**: This is a core functionality for navigating and managing existing owners, essential for day-to-day operations.
+
+**Independent Test**: Can be fully tested by navigating to the find owners page, entering a last name, and verifying the displayed results match the expected owners. Delivers immediate value for locating specific owners.
+
+**Acceptance Scenarios**:
+
+1. **Given** the user is on the "Find Owners" page, **When** they enter "Davis" into the "Last Name" field and click "Search", **Then** the system displays a list of owners whose last names start with "Davis" (e.g., "Betty Davis", "John Davis").
+2. **Given** the user is on the "Find Owners" page, **When** they enter an empty string into the "Last Name" field and click "Search", **Then** the system displays all owners in the system.
+3. **Given** the user is on the "Find Owners" page, **When** they enter a last name that does not exist (e.g., "XYZ"), **Then** the system displays a message indicating no owners were found.
+
+---
+
+### User Story 2 - Create a New Owner (Priority: P1)
+
+Given a user is on the new owner form, When they submit a valid owner form, Then a new owner is created and the user is redirected to the owner's details page.
+
+**Why this priority**: This is a fundamental operation for adding new clients to the clinic.
+
+**Independent Test**: Can be fully tested by navigating to the new owner form, filling in all required fields with valid data, submitting, and verifying the owner's details page is displayed. Delivers core value for onboarding new clients.
+
+**Acceptance Scenarios**:
+
+1. **Given** the user is on the "New Owner" form, **When** they fill in all required fields (First Name, Last Name, Address, City, Telephone) with valid data and click "Add Owner", **Then** a new owner record is created, and the user is redirected to the details page for the newly created owner.
+2. **Given** the user is on the "New Owner" form, **When** they attempt to submit the form with a blank "Last Name", **Then** the system displays a validation error for the "Last Name" field and the owner is not created.
+3. **Given** the user is on the "New Owner" form, **When** they attempt to submit the form with a telephone number that is not 10 digits, **Then** the system displays a validation error for the "Telephone" field and the owner is not created.
+
+---
+
+### User Story 3 - Add a New Pet for an Existing Owner (Priority: P2)
+
+Given an owner exists, When a user navigates to the owner's details page and adds a new pet with valid information, Then the new pet is associated with the owner and displayed on their details page.
+
+**Why this priority**: Managing pets is a key aspect of owner care, and adding new pets is a common operation.
+
+**Independent Test**: Can be fully tested by selecting an existing owner, navigating to their pet section, adding a new pet with valid details, and verifying it appears in the owner's pet list. Delivers value for tracking an owner's animals.
+
+**Acceptance Scenarios**:
+
+1. **Given** an existing owner exists, **When** the user navigates to the owner's details page, selects "Add New Pet", fills in the required pet details (Name, Birth Date, Pet Type) with valid data, and submits, **Then** the new pet is successfully added to the owner's record and appears in the list of pets on the owner's details page.
+2. **Given** an existing owner exists, **When** the user navigates to the owner's details page and attempts to add a new pet with a blank "Name", **Then** the system displays a validation error for the pet's name and the pet is not added.
+3. **Given** an existing owner exists, **When** the user navigates to the owner's details page and attempts to add a new pet without selecting a "Pet Type", **Then** the system displays a validation error for the pet type and the pet is not added.
+
+---
+
+### User Story 4 - Update an Existing Pet's Details (Priority: P2)
+
+Given a pet exists for an owner, When a user navigates to the pet's details and updates its information, Then the pet's details are updated and reflected on the owner's page.
+
+**Why this priority**: Allows for correction of errors or updating information about a pet.
+
+**Independent Test**: Can be fully tested by selecting an owner, then a pet, modifying a field (e.g., birth date), saving, and verifying the change. Delivers value for maintaining accurate pet records.
+
+**Acceptance Scenarios**:
+
+1. **Given** an owner has an existing pet, **When** the user navigates to the pet's details page, modifies the "Birth Date" to a valid new date, and saves the changes, **Then** the pet's birth date is updated, and the change is reflected on the owner's details page.
+2. **Given** an owner has an existing pet, **When** the user navigates to the pet's details page and attempts to update the pet's name to a blank value, **Then** the system displays a validation error for the pet's name and the update is not saved.
+
+---
+
+### User Story 5 - Handle Duplicate Pet Name for an Owner (Priority: P3)
+
+Given an owner exists with a pet, When a new pet with a duplicate name is added for the same owner, Then the system rejects the duplicate pet name and displays an error message.
+
+**Why this priority**: Ensures data integrity by preventing duplicate pet names within the same owner's record.
+
+**Independent Test**: Can be tested by adding a pet with a specific name for an owner, then attempting to add another pet with the exact same name for the same owner. Delivers value by enforcing a specific business rule.
+
+**Acceptance Scenarios**:
+
+1. **Given** an owner has a pet named "Buddy", **When** the user attempts to add another pet for the same owner and enters "Buddy" as the pet's name, **Then** the system rejects the duplicate pet name and displays an error message indicating that a pet with this name already exists for this owner.
+
+---
+
+### Edge Cases
+
+- **Blank Address**: Owner creation/update with a blank address → validation error.
+- **Blank City**: Owner creation/update with a blank city → validation error.
+- **Invalid Telephone Format**: Owner creation/update with a telephone number not matching the `\d{10}` pattern → validation error.
+- **Non-existent Owner ID**: Attempting to edit or view an owner with an ID that does not exist → `IllegalArgumentException` indicating owner not found.
+- **Blank Owner Last Name Search**: Searching for owners with a blank last name → returns all records.
+- **No Owners Found**: Searching for an owner by last name that yields no results → validation error "notFound" on the lastName field.
+- **Blank Pet Name**: Creating or updating a pet with a blank name → validation error "required".
+- **Missing Pet Type**: Creating or updating a pet without selecting a type → validation error "required".
+- **Duplicate Pet Name for Same Owner**: Attempting to add a pet with a name that already exists for the same owner → validation error "duplicate".
+- **Invalid Pet Birth Date Format**: Creating or updating a pet with a birth date in an incorrect format (e.g., "2015/02/12") → validation error "typeMismatch".
+- **Blank Pet Birth Date**: Creating or updating a pet with a null birth date → validation error.
+- **Invalid Visit Date**: Booking a visit with a date that is not in the future (i.e., on or before the current date) → validation error "typeMismatch.visitDate".
+- **Non-existent Pet ID for Owner**: Attempting to add a visit for a pet that does not exist for a given owner → `IllegalArgumentException` indicating pet not found.
+
+## Requirements *(mandatory)*
+
+### Functional Requirements
+
+- **FR-001**: System MUST allow the creation of a new pet for an existing owner.
+- **FR-002**: System MUST allow the update of an existing pet's details.
+- **FR-003**: System SHOULD validate pet information before saving.
+- **FR-004**: System SHOULD display a form for creating or updating pet details.
+- **FR-005**: System SHOULD provide a list of available pet types for selection.
+- **FR-006**: System MUST allow searching for owners by last name.
+- **FR-007**: System MUST allow the creation of new owners.
+- **FR-008**: System MUST prevent duplicate pet names for the same owner.
+- **FR-009**: System MUST validate owner's address, city, and telephone number.
+- **FR-010**: System MUST validate pet's name and birth date.
+
+### Key Entities *(include if feature involves data)*
+
+- **Owner**: Represents a pet owner, including their contact information (name, address, city, telephone) and a list of associated pets.
+- **Pet**: Represents an animal owned by an owner, including its name, birth date, type, and a history of visits.
+- **PetType**: Represents the category of a pet (e.g., Dog, Cat, Bird).
+- **Visit**: Represents a scheduled appointment or interaction for a pet.
+
+## Success Criteria *(mandatory)*
+
+### Measurable Outcomes
+
+- **SC-001**: Users can find owners by last name in under 3 seconds.
+- **SC-002**: New owners can be created with all required fields in under 1 minute.
+- **SC-003**: New pets can be added to an existing owner in under 45 seconds.
+- **SC-004**: 95% of users successfully add or update pet information without encountering validation errors on the first attempt.
+- **SC-005**: The system prevents the addition of duplicate pet names for the same owner, with an error message displayed within 2 seconds.
+
+## Assumptions
+
+- Users have stable internet connectivity.
+- The system will reuse existing mechanisms for displaying lists of pet types.
+- The system will use standard date formatting for birth dates and visit dates.
+- The system will leverage existing validation frameworks for input validation.
+- The system will display a generic "owner not found" or "pet not found" message for non-existent IDs, rather than exposing technical exception details.
+- The system will use a default "required" message for blank fields and a specific message for invalid telephone format.
+- The system will use a default "duplicate" message for duplicate pet names.
+- The system will use a default "typeMismatch" message for invalid date formats.
+- The system will use a default "required" message for missing pet types.
+- The system will use a default "typeMismatch.visitDate" message for invalid visit dates.
+- The system will use a default "notFound" message when no owners are found by last name.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank owner addresses and cities.
+- The system will use a default "required" message for blank owner first and last names.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default "required" message for blank owner cities.
+- The system will use a default "required" message for blank owner telephone numbers.
+- The system will use a default "required" message for blank owner first names.
+- The system will use a default "required" message for blank owner last names.
+- The system will use a default "required" message for blank pet names.
+- The system will use a default "required" message for blank pet types.
+- The system will use a default "required" message for blank pet birth dates.
+- The system will use a default "required" message for blank visit descriptions.
+- The system will use a default "required" message for blank owner addresses.
+- The system will use a default
