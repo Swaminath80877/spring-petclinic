@@ -1,0 +1,3194 @@
+# Feature Specification: Pet Management
+
+**Feature Branch**: `003-pets-spring-petclinic`
+
+**Created**: 2026-09-09
+
+**Status**: Draft
+
+**Input**: User description: "pets for spring-petclinic"
+
+## User Scenarios & Testing *(mandatory)*
+
+### User Story 1 - Create a new pet for an owner (Priority: P1)
+
+As a clinic staff member, I want to add a new pet for an existing owner so that I can maintain accurate records of all animals under our care.
+
+**Why this priority**: This is a core function for managing pet information and is essential for the clinic's operations.
+
+**Independent Test**: Can be fully tested by navigating to an owner's profile, initiating the "Add Pet" action, filling in valid pet details, and verifying the pet appears in the owner's pet list. Delivers the core functionality of pet creation.
+
+**Acceptance Scenarios**:
+
+1. **Given** an owner exists with ID 1, **When** a new pet is created with valid details (name: "Buddy", type: "hamster", birthDate: "1990-01-01"), **Then** the pet is saved successfully and linked to the owner, and a success message "Pet details has been edited" is displayed.
+2. **Given** an owner exists with ID 1, **When** a new pet is created with a blank name, **Then** a validation error "Pet name must not be blank" is displayed.
+3. **Given** an owner exists with ID 1, **When** a new pet is created with a blank type, **Then** a validation error "Pet type must not be blank" is displayed.
+4. **Given** an owner exists with ID 1, **When** a new pet is created with a blank birth date, **Then** a validation error "Pet birth date must not be blank" is displayed.
+
+---
+
+### User Story 2 - Handle duplicate pet name creation for the same owner (Priority: P2)
+
+As a clinic staff member, I want to be prevented from adding a pet with a name that already exists for the same owner, to avoid confusion and maintain data integrity.
+
+**Why this priority**: Prevents data inconsistencies and potential confusion for staff and owners.
+
+**Independent Test**: Can be fully tested by attempting to add a second pet with the same name as an existing pet for a given owner. Delivers data integrity.
+
+**Acceptance Scenarios**:
+
+1. **Given** an owner exists with ID 1 and already has a pet named "petty", **When** an attempt is made to create a new pet for the same owner with the name "petty", **Then** a validation error "already exists" is shown for the pet's name, and the form remains on the create or update pet form page.
+
+---
+
+### User Story 3 - Update an existing pet's details (Priority: P1)
+
+As a clinic staff member, I want to update an existing pet's information (name, type, birth date) so that the pet's records are always current.
+
+**Why this priority**: Essential for maintaining accurate and up-to-date pet information.
+
+**Independent Test**: Can be fully tested by selecting an existing pet, modifying its details, saving the changes, and verifying the updated information on the owner's details page. Delivers accurate record keeping.
+
+**Acceptance Scenarios**:
+
+1. **Given** an owner exists with ID 1 and has a pet with ID 1 named "petty", **When** the pet's details are updated (e.g., name to "Buddy", type to "dog", birthDate to "2015-02-12"), **Then** the pet's details are updated successfully, and the user is redirected to the owner's details page with a message "Pet details has been edited".
+2. **Given** an owner exists with ID 1 and has a pet with ID 1, **When** the pet's name is updated to a blank value, **Then** a validation error "Pet name must not be blank" is displayed.
+3. **Given** an owner exists with ID 1 and has a pet with ID 1, **When** the pet's type is updated to a blank value, **Then** a validation error "Pet type must not be blank" is displayed.
+4. **Given** an owner exists with ID 1 and has a pet with ID 1, **When** the pet's birth date is updated to a blank value, **Then** a validation error "Pet birth date must not be blank" is displayed.
+5. **Given** an owner exists with ID 1 and has a pet with ID 1, **When** the pet's birth date is updated to a future date, **Then** a validation error "typeMismatch.birthDate" is displayed.
+
+---
+
+### User Story 4 - Add a visit for a pet (Priority: P1)
+
+As a clinic staff member, I want to add a visit record for a pet so that I can track its medical history.
+
+**Why this priority**: Core functionality for managing pet health records.
+
+**Independent Test**: Can be fully tested by selecting a pet, initiating the "Add Visit" action, filling in valid visit details, and verifying the visit appears in the pet's visit history. Delivers complete medical record tracking.
+
+**Acceptance Scenarios**:
+
+1. **Given** a pet exists with ID 1, **When** a new visit is created with valid details (date: "2026-09-09", description: "Routine check-up"), **Then** the visit is saved successfully and linked to the pet.
+2. **Given** a pet exists with ID 1, **When** a new visit is created with a blank description, **Then** a validation error "Visit description must not be blank" is displayed.
+3. **Given** a pet exists with ID 1, **When** a new visit is created with a date in the past, **Then** a validation error "Invalid Visit Date" is displayed.
+
+---
+
+### Edge Cases
+
+- **Duplicate Pet Name**: Attempting to add a pet with a name that already exists for the same owner → system rejects with a "duplicate" error.
+- **Missing Pet Type**: Attempting to create a pet without specifying its type → system rejects with a "required" error for the pet type.
+- **Empty Pet Name**: Attempting to create or update a pet with an empty name → system rejects with a "required" error for the name.
+- **Null Pet Type for New Pet**: Attempting to create a new pet without assigning a type → system rejects with a "required" error for the pet type.
+- **Null Birth Date**: Attempting to create or update a pet without a birth date → system rejects with a "required" error for the birth date.
+- **Future Birth Date**: Attempting to create or update a pet with a birth date in the future → system rejects with a "typeMismatch.birthDate" error.
+- **Invalid Visit Date**: Submitting a visit with a date that is not in the future (i.e., today or in the past) → system rejects with a "typeMismatch.visitDate" error.
+- **Missing Visit Description**: Attempting to create a new visit without a description → system rejects with a validation error for the visit.
+
+## Requirements *(mandatory)*
+
+### Functional Requirements
+
+- **FR-001**: System MUST allow the creation of a new pet for an existing owner.
+- **FR-002**: System MUST validate that a pet has a name, type, and birth date during creation or update.
+- **FR-003**: System SHOULD allow updating an existing pet's information.
+- **FR-004**: System SHOULD provide a form for creating or updating a pet, pre-populated with the owner's details.
+- **FR-005**: System SHOULD provide a list of available pet types for selection during pet creation.
+- **FR-006**: System MUST allow adding a visit record for an existing pet.
+- **FR-007**: System MUST validate that a visit has a date and a description.
+- **FR-008**: System MUST prevent adding a pet with a name that already exists for the same owner.
+- **FR-009**: System MUST reject pets with future birth dates.
+- **FR-010**: System MUST reject visits with past or present dates.
+
+### Key Entities *(include if feature involves data)*
+
+- **Pet**: Represents an animal owned by a client. Attributes include name, birth date, and type. It is linked to an Owner and can have multiple Visits.
+- **PetType**: Represents the category of a pet (e.g., Dog, Cat, Hamster). It is a named entity.
+- **Visit**: Represents a medical visit for a pet. Attributes include date and description. It is linked to a Pet.
+
+## Success Criteria *(mandatory)*
+
+### Measurable Outcomes
+
+- **SC-001**: Users can successfully create and update pet records in under 1 minute per pet.
+- **SC-002**: The system prevents duplicate pet names for the same owner with 100% accuracy.
+- **SC-003**: 95% of new pet creations and updates are completed without validation errors due to missing required fields.
+- **SC-004**: All pet visits are recorded with accurate dates and descriptions, with less than 1% data entry errors for descriptions.
+- **SC-005**: The system successfully handles at least 100 concurrent pet record operations without performance degradation.
+
+## Assumptions
+
+- Users interacting with the pet management system are clinic staff with appropriate permissions.
+- The list of available pet types is managed separately and will be available for selection.
+- The system will reuse existing owner and pet IDs.
+- Dates are expected in a standard format that the system can parse.
+- The system will provide user-friendly error messages for validation failures.
+- The "spring-petclinic" application context and its existing entities (Owner, NamedEntity, BaseEntity) are available and functional.
+- The `DateTimeFormat` annotation will be used for date parsing.
+- The `NotBlank` constraint will be used for validation of names and descriptions.
+- The `LocalDate` type will be used for birth dates and visit dates.
+- The `Set<Visit>` will be used to represent the collection of visits for a pet.
+- The `PetType` will be a `NamedEntity`.
+- The `Visit` will be a `BaseEntity`.
+- The `PetValidator` will handle the validation logic for pet creation and updates.
+- The `PetController` will handle the user interface and business logic for pet management.
+- The `VisitController` will handle the user interface and business logic for visit management.
+- The `OwnerController` will display the list of pets for an owner.
+- The `PetControllerTests` and `VisitControllerTests` will be updated or created to cover these functionalities.
+- The `PetClinicApplication` will be the entry point for the application.
+- The `PetClinicRuntimeHints` will be configured for AOT compilation.
+- The `EnableCaching` annotation will be used for caching.
+- The `JCacheManagerCustomizer` will be used for JCache configuration.
+- The `Bean` and `Configuration` annotations will be used for Spring configuration.
+- The `MutableConfiguration` will be used for JCache configuration.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` annotations will be used for Spring MVC controllers.
+- The `RedirectAttributes` will be used for redirecting after form submissions.
+- The `ObjectRetrievalFailureException` will be used for handling retrieval failures.
+- The `StringUtils` class will be used for string manipulation.
+- The `Errors` and `Validator` interfaces will be used for validation.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` classes will be used for collections.
+- The `Collectors` class will be used for stream collection operations.
+- The `RuntimeHints` and `RuntimeHintsRegistrar` will be used for AOT hints.
+- The `SpringApplication` and `SpringBootApplication` classes will be used for Spring Boot bootstrapping.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` will be used for testing.
+- The `Assert` class will be used for assertions.
+- The `ToStringCreator` will be used for string representation.
+- The `EntityUtils` will be used for entity-related utilities.
+- The `CrashController` will be used for demonstrating exception handling.
+- The `Vet` and `Specialty` entities are part of the broader clinic domain but not directly modified by this feature.
+- The `OwnerController`, `PetController`, `VisitController` will be the primary controllers for this feature.
+- The `PetValidatorTests` will be updated to include tests for the new validation rules.
+- The `VisitControllerTests` will be updated to include tests for the new validation rules.
+- The `EntityUtils` will be used for common entity operations.
+- The `PetClinicApplication` will be the main application class.
+- The `PetClinicRuntimeHints` will be used for AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `Owner` module is a direct dependency and will be interacted with.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
+- The `StringUtils` and `Assert` utilities are for general programming tasks.
+- The `Errors` and `Validator` interfaces are for Spring validation framework.
+- The `Controller`, `GetMapping`, `PostMapping`, `PathVariable`, `ModelAttribute` are for Spring MVC.
+- The `RedirectAttributes` are for managing redirect parameters.
+- The `ObjectRetrievalFailureException` is for handling data retrieval errors.
+- The `LocalDate` is the standard for dates.
+- The `Collection`, `Set`, `LinkedHashSet`, `HashSet`, `Comparator`, `List`, `Optional` are standard Java collections.
+- The `Collectors` are for stream operations.
+- The `EnableCaching` and `JCacheManagerCustomizer` are for caching configuration.
+- The `Bean` and `Configuration` are for Spring dependency injection.
+- The `SpringBootTest`, `MockitoExtension`, `TestRestTemplate`, `MockMvc`, `MockMvcRequestBuilders`, `MockMvcResultMatchers`, `MockMvcBuilders`, `ExtendWith`, `DisabledInNativeImage` are for testing.
+- The `ToStringCreator` is for object string representation.
+- The `EntityUtils` is for utility functions related to entities.
+- The `CrashController` is for demonstrating exception handling.
+- The `PetValidatorTests` and `VisitControllerTests` will be updated to reflect the new requirements.
+- The `OwnerController`, `PetController`, and `VisitController` will be the primary controllers for this feature.
+- The `PetClinicApplication` and `PetClinicRuntimeHints` are core to the application's structure and AOT compilation.
+- The `Vet` module is a dependency but not directly modified.
+- The `NamedEntity` and `BaseEntity` are foundational entities.
+- The `DateTimeFormat` and `NotBlank` annotations are key for data handling and validation.
+- The `Entity`, `Table`, `Column`, `JoinColumn`, `ManyToOne`, `OneToMany`, `JoinTable`, `ManyToMany`, `OrderBy` annotations are for JPA persistence.
