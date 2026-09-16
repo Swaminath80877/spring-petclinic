@@ -12,51 +12,52 @@
 
 ### User Story 1 - View Vet List (Priority: P1)
 
-As a user, I want to see a list of all veterinarians so that I can understand who provides services.
+As a clinic administrator or staff member, I want to view a list of all veterinarians registered in the system so that I can quickly see who is available and their specialties.
 
-**Why this priority**: This is a core function of the vets module, providing essential information to users.
+**Why this priority**: This is a core function for managing the clinic's staff and understanding available expertise.
 
-**Independent Test**: Can be fully tested by navigating to the vets page and verifying that a list of vets is displayed.
+**Independent Test**: Can be fully tested by navigating to the vets page and verifying that a list of vets is displayed, along with their specialties.
 
 **Acceptance Scenarios**:
 
 1. **Given** the vets module is accessible, **When** a user navigates to the vets page, **Then** a list of all veterinarians is displayed.
+2. **Given** a list of veterinarians is displayed, **When** viewing a veterinarian's entry, **Then** their first name, last name, and specialties are shown.
 
 ---
 
 ### User Story 2 - View Vet Details (Priority: P2)
 
-As a user, I want to view the details of a specific veterinarian, including their specialties, so that I can make an informed decision about who to consult.
+As a clinic administrator or staff member, I want to view the detailed information for a specific veterinarian, including their specialties, so that I can understand their qualifications and expertise.
 
-**Why this priority**: This provides more granular information for users to select a vet.
+**Why this priority**: While viewing the list is primary, detailed information is crucial for making informed decisions about vet assignments or client consultations.
 
-**Independent Test**: Can be fully tested by selecting a vet from the list and verifying their details and specialties are shown.
+**Independent Test**: Can be fully tested by selecting a specific vet from the list and verifying that their full details, including specialties, are presented correctly.
 
 **Acceptance Scenarios**:
 
-1. **Given** a specific vet exists, **When** a user views the vet's profile, **Then** their first name, last name, and specialties are displayed.
+1. **Given** a specific vet exists in the system, **When** a user views the details of that vet, **Then** their first name, last name, and specialties are shown.
 
 ---
 
-### User Story 3 - Vet Serialization (Priority: P3)
+### User Story 3 - Vet Data Serialization (Priority: P3)
 
-As a developer, I want to ensure that Vet objects can be reliably serialized and deserialized, so that data can be exchanged or persisted correctly.
+As a system developer, I want to ensure that Vet objects can be reliably serialized and deserialized, so that data can be stored, transmitted, and retrieved without loss of integrity.
 
-**Why this priority**: This is a technical requirement that ensures data integrity and interoperability.
+**Why this priority**: This is a technical requirement that underpins data persistence and potential inter-service communication, but it's not directly a user-facing feature.
 
-**Independent Test**: Can be tested by creating a Vet object, serializing it, and then deserializing it to confirm all attributes are preserved.
+**Independent Test**: Can be tested by creating a Vet object, serializing it, deserializing it, and then comparing the original and deserialized objects for equality of first name, last name, and ID.
 
 **Acceptance Scenarios**:
 
-1. **Given** a Vet object is created, **When** it is serialized and deserialized, **Then** the original Vet object's attributes are preserved.
+1. **Given** a Vet object is created, **When** it is serialized and then deserialized, **Then** the deserialized object retains the original vet's first name, last name, and ID.
 
 ---
 
 ### Edge Cases
 
-- What happens when a vet has no specialties?
-- How does the system handle a blank vet name?
-- How does the system handle a blank specialty name?
+- **Invalid Vet Name**: What happens when a vet's name is blank? → System rejects with validation error.
+- **Invalid Specialty**: How does the system handle a vet with no specialties? → System allows a vet to have an empty set of specialties.
+- **Cache Invalidation**: How does the system handle stale vet data if the cache is not updated after a vet's information changes? → System should ensure cache is updated or invalidated appropriately.
 
 ## Requirements *(mandatory)*
 
@@ -66,28 +67,27 @@ As a developer, I want to ensure that Vet objects can be reliably serialized and
 - **FR-002**: System MUST show each vet's specialities on their profile.
 - **FR-003**: System SHOULD cache vet list results to reduce database load.
 - **FR-004**: System SHOULD enable statistics for the "vets" cache.
-- **FR-005**: System MUST provide a welcome page at the root URL "/".
+- **FR-005**: System MUST allow for internationalization of text content.
 
 ### Key Entities *(include if feature involves data)*
 
 - **Vet**: Represents a veterinarian. Key attributes include first name, last name, and a collection of specialties.
-- **Specialty**: Represents a specialization for a vet (e.g., dentistry). Key attributes include its name.
-- **Vets**: Represents a collection of veterinarians, likely used for serialization.
+- **Specialty**: Represents a veterinarian's area of expertise (e.g., dentistry). It inherits from `NamedEntity` and has a name.
+- **Vets**: A container object representing a collection of `Vet` objects, typically used for returning a list of veterinarians.
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: Users can view the list of veterinarians within 2 seconds.
-- **SC-002**: Vet specialties are displayed correctly for 100% of vets with specialties.
-- **SC-003**: The system successfully caches vet data, reducing database load by at least 20% under normal usage.
-- **SC-004**: Cache statistics for the vets cache are accessible and provide meaningful insights.
-- **SC-005**: The welcome page is accessible at the root URL within 1 second.
+- **SC-001**: Users can view the list of all veterinarians within 2 seconds.
+- **SC-002**: The system successfully caches vet data, reducing database load by at least 30% during peak hours.
+- **SC-003**: Cache statistics for the "vets" cache are accessible and provide meaningful insights into cache performance.
+- **SC-004**: All vet-related text content is correctly internationalized and can be displayed in multiple languages.
 
 ## Assumptions
 
-- Users have stable internet connectivity.
-- The underlying data persistence mechanism (database) is functional and contains vet data.
-- The project's existing architecture and conventions will be followed.
-- The definition of "paginated" for the vet list will align with standard web conventions (e.g., 10-20 items per page).
-- The "welcome page" at the root URL is a static or simple dynamic page.
+- Users accessing the vets page have appropriate permissions to view this information.
+- The underlying database is available and functional for retrieving vet data.
+- The caching mechanism is configured and operational.
+- Internationalization properties files are correctly structured and accessible.
+- The `NamedEntity` and `Person` base classes provide the necessary attributes for `Vet` and `Specialty`.

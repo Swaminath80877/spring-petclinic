@@ -3,32 +3,32 @@
 ## Core Principles
 
 ### I. Layered Architecture Adherence
-Every component MUST reside within its designated architectural layer (Controller, Repository, Domain/Model, Configuration, Test, System). Cross-layer dependencies MUST follow a strict top-down flow (Controller -> Service -> Repository -> Domain). Direct dependencies between non-adjacent layers are prohibited.
+Every component MUST reside within its designated architectural layer (Controller, Repository, Domain/Model, Configuration, Test, System). New components MUST be placed in the most appropriate existing layer or a new layer MUST be justified and approved.
 
-### II. Spring Boot Convention Over Configuration
-Leverage Spring Boot's auto-configuration capabilities wherever possible. Custom configurations (e.g., `CacheConfiguration`, `WebConfiguration`) MUST be minimal, well-documented, and only introduced when explicit customization is required beyond standard Spring Boot features.
+### II. Spring Boot Convention Compliance
+The project MUST leverage Spring Boot features and conventions for configuration, dependency injection, and application bootstrapping. Custom configurations MUST adhere to Spring Boot's auto-configuration principles where applicable.
 
-### III. Comprehensive Test Coverage (NON-NEGOTIABLE)
-All new features and bug fixes MUST be accompanied by unit and integration tests. Unit tests MUST target individual components in isolation, while integration tests MUST verify interactions between layers and external dependencies (e.g., database, external services). Test coverage MUST be maintained at a minimum of 80%.
+### III. Test Coverage Mandate
+All new features and significant bug fixes MUST be accompanied by comprehensive unit and integration tests. Existing code MUST be refactored to include tests when modified. Test coverage metrics MUST be maintained and reviewed.
 
-### IV. Domain Model Integrity
-The domain model (entities like `Owner`, `Pet`, `Vet`, `Visit`) MUST remain pure and free from framework-specific annotations or logic where possible, except for necessary JPA/validation annotations. Business logic SHOULD reside in service layers, not directly within domain entities.
+### IV. Data Persistence Abstraction
+Data access logic MUST be encapsulated within repository interfaces, abstracting the underlying persistence mechanism (e.g., JPA). Domain entities MUST be designed to be independent of specific database technologies.
 
-### V. Observability and Debuggability
-All controllers and services MUST be designed to facilitate logging and tracing. Use of Spring Boot Actuator or similar mechanisms for monitoring health and metrics is encouraged. Error handling MUST be consistent and provide sufficient detail for debugging.
+### V. Observability and Logging
+All controllers and service layers MUST implement structured logging for key operations and potential error conditions. Application health and performance metrics SHOULD be exposed through standard Spring Boot Actuator endpoints.
 
 ## Development Workflow
 
 ### Code Review and Quality Gates
-All pull requests MUST undergo a thorough code review by at least one other team member. Reviews MUST verify adherence to the core principles, coding standards, and test coverage requirements. Automated checks (e.g., static analysis, test execution) MUST pass before a pull request can be merged.
+All pull requests MUST undergo a thorough code review by at least one other team member. Reviews MUST verify adherence to core principles, coding standards, and test coverage. Automated checks (CI pipeline) MUST enforce code style, static analysis, and test execution as quality gates.
 
-### Dependency Management
-Dependencies MUST be managed via Maven. New dependencies MUST be carefully evaluated for necessity and potential impact on the project. Version conflicts MUST be resolved promptly.
+### Integration Testing Strategy
+Integration tests MUST focus on verifying interactions between different layers and external systems. This includes testing controller-to-service, service-to-repository, and application-to-database interactions. Specific integration tests are provided for various database technologies (MySQL, PostgreSQL), indicating a strategy for testing against different data stores.
 
-### Database Interaction
-All data access MUST be performed through Spring Data JPA repositories. Direct SQL queries should be avoided unless absolutely necessary and clearly justified. Integration tests MUST cover database interactions, including schema changes and data persistence.
+### Versioning and Breaking Changes
+The project follows semantic versioning. Any changes that introduce backward incompatibilities MUST be clearly documented and communicated. Breaking changes to public APIs or core domain models REQUIRE a major version increment and a migration plan.
 
 ## Governance
-This constitution supersedes all other development practices for the Spring PetClinic project. Amendments to this constitution require a formal proposal, review by the core development team, and a majority approval. Any approved amendments MUST include a clear migration plan if they impact existing code or workflows. Compliance with this constitution is a mandatory requirement for all code merged into the main branch.
+This constitution supersedes all other development practices and guidelines for the Spring PetClinic project. Amendments to this constitution REQUIRE a formal proposal, documented justification, and approval by a majority of the core development team. Compliance with this constitution is a mandatory requirement for all code merged into the main branch.
 
 **Version**: 1.0.0 | **Ratified**: 2026-09-16 | **Last Amended**: 2026-09-16
