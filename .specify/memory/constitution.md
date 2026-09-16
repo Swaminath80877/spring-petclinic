@@ -3,43 +3,32 @@
 ## Core Principles
 
 ### I. Layered Architecture Adherence
-Every component MUST reside within its designated architectural layer (Controller, Repository, Configuration, Domain/Model). No cross-layer dependencies are permitted except for those explicitly defined by the framework (e.g., Controllers interacting with Services, Services interacting with Repositories).
+Every component MUST reside within its designated architectural layer (Controller, Repository, Domain/Model, Configuration, Test, System). Cross-layer dependencies MUST follow a strict top-down flow (Controller -> Service -> Repository -> Domain). Direct dependencies between non-adjacent layers are prohibited.
 
-### II. Test Coverage Mandate
-All new features and bug fixes MUST include comprehensive unit and integration tests. Unit tests MUST cover individual components (e.g., Controllers, Services, Models), and integration tests MUST verify interactions between layers and with external systems (e.g., database, external APIs). Existing tests MUST be maintained and updated to reflect code changes.
+### II. Spring Boot Convention Over Configuration
+Leverage Spring Boot's auto-configuration capabilities wherever possible. Custom configurations (e.g., `CacheConfiguration`, `WebConfiguration`) MUST be minimal, well-documented, and only introduced when explicit customization is required beyond standard Spring Boot features.
 
-### III. Spring Boot Convention Over Configuration
-The project MUST leverage Spring Boot's auto-configuration capabilities wherever possible. Custom configurations (e.g., `CacheConfiguration.java`, `WebConfiguration.java`) MUST be minimal, well-documented, and only implemented when standard Spring Boot features are insufficient.
+### III. Comprehensive Test Coverage (NON-NEGOTIABLE)
+All new features and bug fixes MUST be accompanied by unit and integration tests. Unit tests MUST target individual components in isolation, while integration tests MUST verify interactions between layers and external dependencies (e.g., database, external services). Test coverage MUST be maintained at a minimum of 80%.
 
-### IV. Data Persistence Abstraction
-All data access operations MUST be performed through the defined Repository interfaces (`OwnerRepository`, `PetTypeRepository`, `VetRepository`). Direct SQL queries or manual JDBC operations within service or controller layers are strictly prohibited.
+### IV. Domain Model Integrity
+The domain model (entities like `Owner`, `Pet`, `Vet`, `Visit`) MUST remain pure and free from framework-specific annotations or logic where possible, except for necessary JPA/validation annotations. Business logic SHOULD reside in service layers, not directly within domain entities.
 
-### V. Observability and Logging
-Application behavior and potential issues MUST be observable through structured logging. All significant events, errors, and state changes MUST be logged using appropriate log levels. The `spring-boot-starter-logging` dependency MUST be used for consistent logging practices.
-
-## Additional Constraints
-
-The project MUST adhere to the following constraints:
-*   **Technology Stack**: The primary technology stack is Java with Spring Boot, JPA (Hibernate), and Thymeleaf for templating.
-*   **Database**: The application is designed to work with relational databases, with explicit support for MySQL and PostgreSQL demonstrated through integration tests.
-*   **Containerization**: Kubernetes manifests (`k8s/`) are provided, indicating an intent for containerized deployment. Development environments should leverage `.devcontainer/` for consistency.
-*   **Internationalization (i18n)**: All user-facing strings MUST be internationalized and managed through properties files, as enforced by `I18nPropertiesSyncTest.java`.
+### V. Observability and Debuggability
+All controllers and services MUST be designed to facilitate logging and tracing. Use of Spring Boot Actuator or similar mechanisms for monitoring health and metrics is encouraged. Error handling MUST be consistent and provide sufficient detail for debugging.
 
 ## Development Workflow
 
-*   **Branching Strategy**: Feature development MUST occur on dedicated feature branches. All code changes MUST be submitted via Pull Requests (PRs).
-*   **Code Reviews**: All PRs MUST undergo at least one thorough code review by a team member familiar with the project's architecture and principles. Reviewers MUST verify adherence to this constitution.
-*   **CI/CD**: Continuous Integration (CI) pipelines MUST automatically build, test, and analyze code quality on every commit to main branches. Continuous Deployment (CD) pipelines MAY be implemented for automated deployments to staging or production environments after successful CI and manual approval.
-*   **Testing Gates**: Successful execution of all unit and integration tests is a mandatory gate for merging any code.
+### Code Review and Quality Gates
+All pull requests MUST undergo a thorough code review by at least one other team member. Reviews MUST verify adherence to the core principles, coding standards, and test coverage requirements. Automated checks (e.g., static analysis, test execution) MUST pass before a pull request can be merged.
+
+### Dependency Management
+Dependencies MUST be managed via Maven. New dependencies MUST be carefully evaluated for necessity and potential impact on the project. Version conflicts MUST be resolved promptly.
+
+### Database Interaction
+All data access MUST be performed through Spring Data JPA repositories. Direct SQL queries should be avoided unless absolutely necessary and clearly justified. Integration tests MUST cover database interactions, including schema changes and data persistence.
 
 ## Governance
-
-This Constitution supersedes all other development practices and guidelines for the Spring PetClinic repository. Amendments to this Constitution require:
-1.  A formal proposal detailing the proposed changes and their justification.
-2.  A review and approval process by at least two senior members of the development team.
-3.  A clear migration plan if the amendment necessitates changes to existing code or infrastructure.
-4.  Documentation of the amendment in the repository's history.
-
-All Pull Requests and code reviews MUST verify compliance with the principles outlined in this Constitution. Any deviation from these principles MUST be explicitly justified and approved by the governance body.
+This constitution supersedes all other development practices for the Spring PetClinic project. Amendments to this constitution require a formal proposal, review by the core development team, and a majority approval. Any approved amendments MUST include a clear migration plan if they impact existing code or workflows. Compliance with this constitution is a mandatory requirement for all code merged into the main branch.
 
 **Version**: 1.0.0 | **Ratified**: 2026-09-16 | **Last Amended**: 2026-09-16
